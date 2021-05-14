@@ -18,7 +18,8 @@ namespace Platformer.Player
         [SerializeField] Vector2 groundCubeSize;
         [SerializeField] Vector2 wallForce;
         [SerializeField] float wallJumpTime= .05f;
-
+        [Range(0, .3f)] [SerializeField] private float m_MovementSmoothing = .05f;
+        Vector3 zeroVelocity = Vector3.zero;
         Vector2 move;
         Rigidbody2D rb;
         int extraJumpCount;
@@ -70,9 +71,11 @@ namespace Platformer.Player
         }
         void Movement(Vector2 move)
         {
-            rb.velocity = new Vector2(move.x * speed, rb.velocity.y);
+          //  rb.velocity = new Vector2(move.x * speed, rb.velocity.y);
+            Vector2 targetVel = new Vector2(move.x * speed, rb.velocity.y);
+            rb.velocity = Vector3.SmoothDamp(rb.velocity, targetVel, ref zeroVelocity, m_MovementSmoothing);
         }
-    
+
         void Jump()
         {
             if((isOnGround || extraJumpCount > 0) && !isWallSliding)
