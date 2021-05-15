@@ -13,9 +13,9 @@ namespace Platformer.Trigger
         [SerializeField] float speed;
         Vector3 originalLocation;
         [SerializeField]Lever thisObjectsTrigger;
-        [SerializeField] bool hasBeenTriggered;
-        [SerializeField] bool hasReachedTop;
-        [SerializeField] bool hasReachedBottom =true;
+        bool hasBeenTriggered;
+        bool hasReachedTop;
+        bool hasReachedBottom =true;
         private void Start()
         {
             originalLocation = transform.position;
