@@ -8,19 +8,17 @@ namespace Platformer.Enemy
 {
     public class EnemyRoamer : MonoBehaviour
     {
-        [SerializeField] float rightPositionExtra;
+    
         [SerializeField] LayerMask playerLayer;
-        [SerializeField] Vector2 cubeSize;
-        [SerializeField] Vector2 bottomCubeSize;
         [SerializeField] float speedUp;
-        [SerializeField] float originalSpeed;
-        [SerializeField] Transform frontCheck;
-        [SerializeField] Transform bottomCheck;
+        float originalSpeed;
         [SerializeField] bool isHittingPlayer;
-        [SerializeField] bool canKillPlayer;
+        [SerializeField] bool canKillPlayer; 
+        [SerializeField] float distanceToChase;
+        [SerializeField] float distanceToKill;
         PlatformMover platform;
         PlayerDie player;
-
+        [SerializeField] bool isBallEnemy =false;
         private void Start()
         {
             platform = GetComponent<PlatformMover>();
@@ -29,7 +27,7 @@ namespace Platformer.Enemy
         }
         private void Update()
         {
-             CheckIsPlayerInViewLine();
+        //    CheckIsPlayerInViewLine();
             CheckWillPlayerBeKilled();
             ChasePlayer();
         }
@@ -37,6 +35,7 @@ namespace Platformer.Enemy
         {
      
             Flip(platform.isFacingRight);
+            CheckRayCasts();
         }
         void ChasePlayer()
         {
@@ -49,45 +48,67 @@ namespace Platformer.Enemy
                 platform.speed = originalSpeed;
             }
         }
-        private void OnDrawGizmos()
-        {
-            Gizmos.color = Color.white;
-            Gizmos.DrawWireCube(frontCheck.position, cubeSize);
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireCube(bottomCheck.position, bottomCubeSize);
-        }
-        void CheckIsPlayerInViewLine()
-        {
-            isHittingPlayer = Physics2D.OverlapBox(frontCheck.position, cubeSize, 0, playerLayer);
-        }
+     
         void CheckWillPlayerBeKilled()
         {
-            canKillPlayer = Physics2D.OverlapBox(bottomCheck.position, bottomCubeSize, 0, playerLayer);
-            if (canKillPlayer)
+        //    canKillPlayer = Physics2D.OverlapBox(bottomCheck.position, bottomCubeSize, 0, playerLayer);
+            if (canKillPlayer &&  !PlayerDie.isDead)
             {
                 player.Die();
             }
         }
         void CheckRayCasts()
         {
-          
-       /*     RaycastHit2D hitRight = Physics2D.Raycast(transform.position,
-                transform.right, rightPositionExtra, playerLayer);
-            RaycastHit2D hitLeft = Physics2D.Raycast(transform.position,
-                -transform.right, rightPositionExtra, playerLayer);
-         
-            if (hitRight.collider.gameObject.tag == "Player")
+         //   Debug.DrawRay(transform.position, Vector2.right, Color.green, distance);
+            RaycastHit2D hitPlayerInFront;  
+            RaycastHit2D rightHit;      
+            if (platform.isFacingRight)
             {
-                Debug.Log("hit player right");
-
+                hitPlayerInFront = Physics2D.Raycast(transform.position, Vector2.right, distanceToChase, playerLayer);
+                rightHit = Physics2D.Raycast(transform.position, Vector2.right, distanceToKill, playerLayer);
+            }
+            else
+            {
+               hitPlayerInFront = Physics2D.Raycast(transform.position, -Vector2.right, distanceToChase, playerLayer);
+                rightHit = Physics2D.Raycast(transform.position, -Vector2.right, distanceToKill, playerLayer);
+            }
+          
+            if (hitPlayerInFront.collider != null)
+            {
+                isHittingPlayer = true;
+            }
+            else
+            {
+                isHittingPlayer = false;
+            }
+            if (!isBallEnemy)
+            {
+                if (rightHit.collider != null)
+                {
+                    canKillPlayer = true;
+                }
+                else
+                {
+                    canKillPlayer = false;
+                }
             }
 
-            if (hitLeft.collider.gameObject.tag == "Player")
+
+        }
+
+        //this doesnt work
+        //   HitRaycastSetBool(rightHit, canKillPlayer);
+        //      HitRaycastSetBool(bottomHit, hitBelow);
+        void HitRaycastSetBool(RaycastHit2D hit, bool boolToSet)
+        {
+            if(hit.collider != null)
             {
-                Debug.Log("hit player left");
-
-            }*/
-
+                boolToSet = true;
+            }
+            else
+            {
+                boolToSet = false;
+            }
         }
         void Flip(bool isFacingRight)
         {
@@ -99,6 +120,44 @@ namespace Platformer.Enemy
             {
                 transform.eulerAngles = new Vector3(0, 0, 0);
 
+            }
+        }
+        void CheckIsPlayerInViewLine()
+        {
+            //  isHittingPlayer = Physics2D.OverlapBox(frontCheck.position, cubeSize, 0, playerLayer);
+        }
+        private void OnDrawGizmos()
+        {
+            /*   [SerializeField] Vector2 cubeSize;
+               [SerializeField] Vector2 bottomCubeSize;
+                [SerializeField] float rightPositionExtra;
+               Gizmos.color = Color.white;
+               Gizmos.DrawWireCube(frontCheck.position, cubeSize);
+               Gizmos.color = Color.red;
+               Gizmos.DrawWireCube(bottomCheck.position, bottomCubeSize);
+            
+             
+        [SerializeField] Transform frontCheck;
+        [SerializeField] Transform bottomCheck;*/
+        }
+        private void OnCollisionEnter2D(Collision2D collision)
+        {
+            if (collision.gameObject.CompareTag("Player"))
+            {
+                if (isBallEnemy)
+                {
+                    canKillPlayer = true;
+                }
+            }
+        }
+        private void OnCollisionExit2D(Collision2D collision)
+        {
+            if (collision.gameObject.CompareTag("Player"))
+            {
+                if (isBallEnemy)
+                {
+                    canKillPlayer = false;
+                }
             }
         }
 

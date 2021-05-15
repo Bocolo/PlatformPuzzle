@@ -19,11 +19,14 @@ namespace Platformer.Player
         PlayerController playerController;
        // GameObject deadSpriteClone =null;
         List<GameObject> cloneList = new List<GameObject>();
+        Rigidbody2D rb;
+        RigidbodyConstraints2D originalConstraints;
         private void Start()
         {
            player = GetComponent<SpriteRenderer>();
            playerController = GetComponent<PlayerController>();
-
+            rb = GetComponent<Rigidbody2D>();
+            originalConstraints = rb.constraints;
         }
         private void Update()
         {
@@ -47,45 +50,62 @@ namespace Platformer.Player
         {
             playerController.enabled = false;
             isInputEnabled = false;
+            transform.parent = null;
             if (deadSpriteClone == null)
             {
                 deadSpriteClone = Instantiate(deadSprite, new Vector3(transform.position.x, transform.position.y, -0.1f), transform.rotation);
                 deadSpriteClone.name = "deadSpriteClone";
                 deadSpriteRenderer = deadSpriteClone.GetComponent<SpriteRenderer>();
-                Debug.Log(transform.position);
-                player.enabled = false;
-                deadSpriteRenderer.enabled = true;
-               
-                
+                //  Debug.Log(transform.position);
+                   player.enabled = false;
+            //    player.gameObject.SetActive(false);
+                deadSpriteRenderer.enabled = true;                              
             }
             else
             {
                 deadSpriteRenderer.enabled = false;
                 deadSpriteClone.transform.position = transform.position;
                 player.enabled = false;
+           //     player.gameObject.SetActive(false);
                 deadSpriteRenderer.enabled = true;
-                Debug.Log("2: " +transform.position);
+            //    Debug.Log("2: " +transform.position);
             }
-            //Need to Disable player movement
-            transform.position = startPoint.position;
+
+            //   FreezeContraints();
+
+            //this isn;t working right
+         //   transform.position = startPoint.position;
+                Invoke("ResetTransform", 0.5f);
             Invoke("EnableInput", enableInputTime);
         }
-     //   invoke(ResetPosition, 2f);
+   
+        void ResetTransform()
+        {
+            transform.position = startPoint.position;
+        }
         void ResetPosition()
         {
             if (isInputEnabled)
             {
                 if ((Input.GetKeyDown(KeyCode.Space) || Input.GetAxis("Horizontal") > 0 || Input.GetAxis("Horizontal") < 0) && isDead)
                 {
-                    Debug.Log("You are Resetting Position");
-                    //Reset to starting Transform 
+                   
+             //       UnFreezeConstraints();
                     isDead = false;
-             
+                  
                     player.enabled = true;
                     playerController.enabled = true;
 
                 }
             }
+        }
+        void FreezeContraints()
+        {
+            rb.constraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezePositionY;
+        }
+        void UnFreezeConstraints()
+        {
+            rb.constraints = originalConstraints;
         }
 
         private void OnCollisionEnter2D(Collision2D collision)
