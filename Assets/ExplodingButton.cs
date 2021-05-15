@@ -37,16 +37,16 @@ namespace Platformer.Obstacles
                 timeTillExplosion -= Time.deltaTime;
                // Debug.Log(timeTillExplosion);
             }
-            if(timeTillExplosion <= 0)
+            if (timeTillExplosion <= 0)
             {
-                Collider2D hitCollider = Physics2D.OverlapCircle(transform.position, radius, playerLayer);
+            /*    Collider2D hitCollider = Physics2D.OverlapCircle(transform.position, radius, playerLayer);
                 if (hitCollider.gameObject.CompareTag("Player"))
                 {
                     Debug.Log("player in circle");
                     PlayerDie player = hitCollider.gameObject.GetComponent<PlayerDie>();
                     player.Die();
-                }
-              
+                }*/
+
                 Invoke("Explode", .1f);
             }
         }
@@ -73,7 +73,7 @@ namespace Platformer.Obstacles
              
             }
         }
-       /* private void OnTriggerStay2D(Collider2D collision)
+        private void OnTriggerStay2D(Collider2D collision)
         {
             if (collision.gameObject.CompareTag("Player") && !PlayerDie.isDead)
             {
@@ -84,9 +84,10 @@ namespace Platformer.Obstacles
                     player.Die();
                 }
             }
-         *//*   if (PlayerDie.isDead  && timeTillExplosion<=0) {
+     /*       if (PlayerDie.isDead && timeTillExplosion <= 0)
+            {
                 gameObject.SetActive(false);
-            }*//*
-        }*/
+            }*/
+        }
     }
 }
