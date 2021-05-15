@@ -9,24 +9,33 @@ namespace Platformer.Platforms
         [SerializeField] float positionToMoveToX;
         [SerializeField] Vector2 startPosition;
         [SerializeField] Transform[] wayPoints;
-        [SerializeField] float speed = 2f;
+        public float speed = 2f;
         [SerializeField] int currentWayPoint = 0;
-
+        public bool isFacingRight = true;
         
      
         private void FixedUpdate()
         {
-           
-            
-            if(transform.position != wayPoints[currentWayPoint].transform.position)
+
+
+            if (transform.position != wayPoints[currentWayPoint].transform.position)
             {
-                
-                transform.position = Vector2.MoveTowards(transform.position, 
+
+                transform.position = Vector2.MoveTowards(transform.position,
                     wayPoints[currentWayPoint].transform.position,
                     speed * Time.deltaTime);
             }
-            SetCurrentPoint();
+
+                SetCurrentPoint();
+
+            if (transform.position.x < wayPoints[currentWayPoint].transform.position.x)
+            {
+                isFacingRight = true;
+            }
+            else { isFacingRight = false; }
+           
         }
+            
         void SetCurrentPoint()
         {
             if(transform.position == wayPoints[currentWayPoint].transform.position)
@@ -38,5 +47,6 @@ namespace Platformer.Platforms
                 currentWayPoint = 0;
             }
         }
+     
     }
 }

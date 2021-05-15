@@ -29,7 +29,7 @@ namespace Platformer.Player
         {
             ResetPosition();
         }
-        void Die()
+        public  void Die()
         {
             Debug.Log("YouDied");
             //Leave body copy behind
@@ -66,6 +66,8 @@ namespace Platformer.Player
                 deadSpriteRenderer.enabled = true;
                 Debug.Log("2: " +transform.position);
             }
+            //Need to Disable player movement
+            transform.position = startPoint.position;
             Invoke("EnableInput", enableInputTime);
         }
      //   invoke(ResetPosition, 2f);
@@ -78,7 +80,7 @@ namespace Platformer.Player
                     Debug.Log("You are Resetting Position");
                     //Reset to starting Transform 
                     isDead = false;
-                    transform.position = startPoint.position;
+             
                     player.enabled = true;
                     playerController.enabled = true;
 
