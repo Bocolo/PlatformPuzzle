@@ -8,19 +8,29 @@ namespace Platformer.Obstacles
     public class ExplodingButton : MonoBehaviour
     {
         [SerializeField] float timeTillExplosion;
-        [SerializeField] bool isTimerActive;
+        bool isTimerActive;
         [SerializeField] LayerMask playerLayer;
         [SerializeField] float radius;
         CircleCollider2D circleCollider;
         SpriteRenderer spriteRenderer;
+        [SerializeField] SpriteRenderer glowRenderer;
+        [SerializeField] float colorAlpha = 0f;
+        [SerializeField] float upperAlpha = 0.8f;
+   //     [SerializeField] float alphaChangeTime;
+        bool isAlphaIncreasing = true;
+        float originalAlpha;
 
         private void Start()
         {
             circleCollider = GetComponent<CircleCollider2D>();
             spriteRenderer = GetComponent<SpriteRenderer>();
+            glowRenderer.color = new Color(.77f, .17f, .17f, colorAlpha);
+            originalAlpha = colorAlpha;
         }
         private void Update()
         {
+            glowRenderer.color = new Color(.77f, .17f, .17f, colorAlpha);
+      
             if (isTimerActive)
             {
                 ActivateExplosion();
@@ -28,24 +38,37 @@ namespace Platformer.Obstacles
         }
         void ActivateExplosion()
         {
-            //Trigger timer for seconds
-            //sphere casts 
-            //explode
-            //kill player if in sphere
+          
+
+                if (isAlphaIncreasing)
+                {
+                    colorAlpha += Time.deltaTime  ;
+               
+                }
+                else
+                {
+                    colorAlpha -= Time.deltaTime ;
+                }
+
+            
+            if(colorAlpha >= upperAlpha )
+            {
+                isAlphaIncreasing = false;
+               // colorAlpha = originalAlpha;
+            }
+            if( colorAlpha < originalAlpha)
+            {
+                isAlphaIncreasing = true;
+
+            }
             if (timeTillExplosion > 0)
             {
                 timeTillExplosion -= Time.deltaTime;
-               // Debug.Log(timeTillExplosion);
+         
             }
             if (timeTillExplosion <= 0)
             {
-            /*    Collider2D hitCollider = Physics2D.OverlapCircle(transform.position, radius, playerLayer);
-                if (hitCollider.gameObject.CompareTag("Player"))
-                {
-                    Debug.Log("player in circle");
-                    PlayerDie player = hitCollider.gameObject.GetComponent<PlayerDie>();
-                    player.Die();
-                }*/
+         
 
                 Invoke("Explode", .1f);
             }
@@ -57,17 +80,16 @@ namespace Platformer.Obstacles
         }
         void Explode()
         {
-            // if(Physics.SphereCast(transform.position,))
-            //animation
-
           
+            //animation
             gameObject.SetActive(false);
+           
         }
         private void OnTriggerEnter2D(Collider2D collision)
         {
             if (collision.gameObject.CompareTag("Player") && !PlayerDie.isDead)
             {
-                Debug.Log("Player has triggered bomb");
+             //   Debug.Log("Player has triggered bomb");
                 isTimerActive = true;
                 circleCollider.radius = radius;
              
@@ -79,15 +101,26 @@ namespace Platformer.Obstacles
             {
                 if (timeTillExplosion <= 0)
                 {
-                    Debug.Log("OnTriggerSTAycircle");
+                 //   Debug.Log("OnTriggerSTAycircle");
                     PlayerDie player = collision.gameObject.GetComponent<PlayerDie>();
                     player.Die();
                 }
             }
-     /*       if (PlayerDie.isDead && timeTillExplosion <= 0)
-            {
-                gameObject.SetActive(false);
-            }*/
+
         }
     }
 }
+
+// Debug.Log(timeTillExplosion);
+// if(Physics.SphereCast(transform.position,))
+/*       if (PlayerDie.isDead && timeTillExplosion <= 0)
+       {
+           gameObject.SetActive(false);
+       }*/
+/*    Collider2D hitCollider = Physics2D.OverlapCircle(transform.position, radius, playerLayer);
+             if (hitCollider.gameObject.CompareTag("Player"))
+             {
+                 Debug.Log("player in circle");
+                 PlayerDie player = hitCollider.gameObject.GetComponent<PlayerDie>();
+                 player.Die();
+             }*/

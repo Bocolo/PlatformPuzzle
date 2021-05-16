@@ -34,7 +34,7 @@ namespace Platformer.Player
         }
         public  void Die()
         {
-            Debug.Log("YouDied");
+        //    Debug.Log("YouDied");
             //Leave body copy behind
             //on push 
             DeadAnimation();
@@ -92,6 +92,7 @@ namespace Platformer.Player
                    
              //       UnFreezeConstraints();
                     isDead = false;
+                    ResetTransform();
                   
                     player.enabled = true;
                     playerController.enabled = true;

@@ -25,28 +25,23 @@ namespace Platformer.Camera
             if (PlayerDie.isDead)
             {
                 SetTargetToDead();
-                Debug.Log("is dead from camera script");
                 position.y = Mathf.Lerp(this.transform.position.y, deadTarget.transform.position.y + yOffset, interpolation);
                 position.x = Mathf.Lerp(this.transform.position.x, deadTarget.transform.position.x + xOffset, interpolation);
-
-           //     this.transform.position = position;
             }
 
             else
-            {
-              
+            {             
                 position.y = Mathf.Lerp(this.transform.position.y, objectToFollow.transform.position.y + yOffset, interpolation);
                 position.x = Mathf.Lerp(this.transform.position.x, objectToFollow.transform.position.x + xOffset, interpolation);
-
-               
             }
             this.transform.position = position;
         }
         bool SetTargetToDead()
         {
-            deadTarget = GameObject.FindGameObjectWithTag("DeadPlayer");
+            
             if (deadTarget == null)
             {
+                deadTarget = GameObject.FindGameObjectWithTag("DeadPlayer");
                 return false;
             }
             else

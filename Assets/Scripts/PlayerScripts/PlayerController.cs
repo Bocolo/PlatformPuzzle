@@ -45,9 +45,12 @@ namespace Platformer.Player
             move.x = Input.GetAxis("Horizontal");
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                isJumping = true;
-                Jump();
-                SetWallJumping();
+                if (!PlayerDie.isDead)
+                {
+                    isJumping = true;
+                    Jump();
+                    SetWallJumping();
+                }
             }
             else
             {
@@ -62,9 +65,11 @@ namespace Platformer.Player
             {
                 rb.velocity = new Vector2(rb.velocity.x, Mathf.Clamp(rb.velocity.y, -wallSlidingSpeedMax, float.MaxValue));
             }
-      
-            Movement(move);
-            WallJump();
+            if (!PlayerDie.isDead)
+            {
+                Movement(move);
+                WallJump();
+            }
             SetWallSliding();
             SetSurfaceBools();  
             CheckingWallDirection();
@@ -84,6 +89,16 @@ namespace Platformer.Player
                 extraJumpCount--;
             }
         }
+        void WallJump()
+        {
+
+
+            if (isAllowedToWallJump) //&&(move.x == wallDirX || move.x ==0)
+            {
+                rb.velocity = new Vector2(wallForce.x * -wallDirX, wallForce.y);//-move.x//wallDirX
+            }
+
+        }
         void SetWallSliding()
         {
             if ((isOnLeftWall || isOnRightWall) && !isOnGround)
@@ -100,16 +115,7 @@ namespace Platformer.Player
                 Invoke("SetWallJumpingToFalse", wallJumpTime);
             }
         }
-        void WallJump()
-        {
-       
-          
-            if (isAllowedToWallJump) //&&(move.x == wallDirX || move.x ==0)
-            {
-                rb.velocity = new Vector2(wallForce.x * -wallDirX, wallForce.y);//-move.x//wallDirX
-            }
   
-        }
         void SetWallJumpingToFalse()
         {
             isAllowedToWallJump = false;
