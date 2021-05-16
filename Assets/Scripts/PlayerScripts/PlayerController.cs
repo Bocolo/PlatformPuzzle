@@ -31,12 +31,14 @@ namespace Platformer.Player
         bool isJumping;
         bool isWallSliding;
         int wallDirX;
+        PlayerDie player;
 
    
         private void Start()
         {
             rb = GetComponent<Rigidbody2D>();
             extraJumpCount = extraJumpValue;
+            player = GetComponent<PlayerDie>();
          
         }
        
@@ -45,7 +47,7 @@ namespace Platformer.Player
             move.x = Input.GetAxis("Horizontal");
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                if (!PlayerDie.isDead)
+                if (!player.isDead)
                 {
                     isJumping = true;
                     Jump();
@@ -65,7 +67,7 @@ namespace Platformer.Player
             {
                 rb.velocity = new Vector2(rb.velocity.x, Mathf.Clamp(rb.velocity.y, -wallSlidingSpeedMax, float.MaxValue));
             }
-            if (!PlayerDie.isDead)
+            if (!player.isDead)
             {
                 Movement(move);
                 WallJump();
@@ -172,13 +174,7 @@ namespace Platformer.Player
 
         }
 
-        private void OnCollisionEnter2D(Collision2D collision)
-        {
-            //instead of Raycasts
-
-         //   CheckingContactPoints(collision);
-
-        }
+      
         private void OnCollisionExit2D(Collision2D collision)
         {
 
@@ -186,17 +182,19 @@ namespace Platformer.Player
             {
                 transform.parent = null;
             }
-    /*        isGrounded = false;
-            isOnWall = false;
-            isOnSurface = false;
-            isTouchingLeftWall = false;
-            isTouchingRightWall = false;*/
+
 
         }
       
 
     }
 }
+
+/*        isGrounded = false;
+        isOnWall = false;
+        isOnSurface = false;
+        isTouchingLeftWall = false;
+        isTouchingRightWall = false;*/
 /*   if (Input.GetKeyDown(KeyCode.Space) && (isGrounded || extraJumpCount>0) && !isWallSliding)
             {
                 rb.velocity = Vector2.up * jumpForce;

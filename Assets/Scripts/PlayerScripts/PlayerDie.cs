@@ -12,7 +12,7 @@ namespace Platformer.Player
         [SerializeField] GameObject deadSprite;
         [SerializeField] float enableInputTime=2f;
          GameObject deadSpriteClone = null;
-        public static bool isDead = false;
+        public  bool isDead = false;
         bool isInputEnabled = true;
         SpriteRenderer player;
         SpriteRenderer deadSpriteRenderer;

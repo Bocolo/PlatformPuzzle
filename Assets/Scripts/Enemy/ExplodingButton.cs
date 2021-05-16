@@ -87,7 +87,7 @@ namespace Platformer.Obstacles
         }
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if (collision.gameObject.CompareTag("Player") && !PlayerDie.isDead)
+            if (collision.gameObject.CompareTag("Player") && !collision.gameObject.GetComponent<PlayerDie>().isDead)
             {
              //   Debug.Log("Player has triggered bomb");
                 isTimerActive = true;
@@ -97,7 +97,7 @@ namespace Platformer.Obstacles
         }
         private void OnTriggerStay2D(Collider2D collision)
         {
-            if (collision.gameObject.CompareTag("Player") && !PlayerDie.isDead)
+            if (collision.gameObject.CompareTag("Player") && !collision.gameObject.GetComponent<PlayerDie>().isDead)
             {
                 if (timeTillExplosion <= 0)
                 {

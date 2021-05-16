@@ -16,7 +16,7 @@ namespace Platformer.Obstacles
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if (collision.gameObject.CompareTag("Player")&& !PlayerDie.isDead)
+            if (collision.gameObject.CompareTag("Player")&& !collision.gameObject.GetComponent<PlayerDie>().isDead)
             {
                 PlayerDie player = collision.gameObject.GetComponent<PlayerDie>();
                 player.Die();

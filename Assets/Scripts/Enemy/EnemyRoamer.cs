@@ -22,7 +22,7 @@ namespace Platformer.Enemy
         private void Start()
         {
             platform = GetComponent<PlatformMover>();
-            player = FindObjectOfType<PlayerDie>();
+           // player = FindObjectOfType<PlayerDie>();
             originalSpeed = platform.speed;
         }
         private void Update()
@@ -52,7 +52,7 @@ namespace Platformer.Enemy
         void CheckWillPlayerBeKilled()
         {
         //    canKillPlayer = Physics2D.OverlapBox(bottomCheck.position, bottomCubeSize, 0, playerLayer);
-            if (canKillPlayer &&  !PlayerDie.isDead)
+            if (canKillPlayer &&  !player.isDead)
             {
                 player.Die();
             }
@@ -85,6 +85,7 @@ namespace Platformer.Enemy
             {
                 if (rightHit.collider != null)
                 {
+                    player = rightHit.collider.gameObject.GetComponent<PlayerDie>();
                     canKillPlayer = true;
                 }
                 else
@@ -146,6 +147,7 @@ namespace Platformer.Enemy
             {
                 if (isBallEnemy)
                 {
+                    player = collision.gameObject.GetComponent<PlayerDie>();
                     canKillPlayer = true;
                 }
             }
