@@ -37,6 +37,7 @@ namespace Platformer.Player
          public Vector2 lastPosition;
         RigidbodyConstraints2D originalRbConstraints;
         RigidbodyConstraints2D inActiveConstraints;
+        RigidbodyConstraints2D inActiveConstraintsAndGrounded;
    
         private void Start()
         {
@@ -45,6 +46,7 @@ namespace Platformer.Player
             player = GetComponent<PlayerDie>();
             originalRbConstraints = rb.constraints;
             inActiveConstraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezeRotation;
+            inActiveConstraintsAndGrounded = RigidbodyConstraints2D.FreezePosition | RigidbodyConstraints2D.FreezeRotation;
 
         }
        
@@ -92,13 +94,37 @@ namespace Platformer.Player
       
         void SetRbConstraints()
         {
-            if (!isActivePlayer && rb.constraints != inActiveConstraints)
+
+            /*       if (!isActivePlayer && rb.constraints != inActiveConstraints )
+                   {
+                         rb.constraints = inActiveConstraints;
+                       Debug.Log(" setting inactive");
+
+                   }
+                   else if (isActivePlayer && rb.constraints == inActiveConstraints )
+                   {
+                       rb.constraints = originalRbConstraints;
+                       Debug.Log("setting active");
+                   }*/
+            if (!isActivePlayer)// && (rb.constraints != inActiveConstraints || rb.constraints != inActiveConstraintsAndGrounded)
             {
-                rb.constraints = inActiveConstraints;
-                Debug.Log("setting inactive");
+                //  rb.constraints = inActiveConstraints;
+
+             
+                if (isOnGround && rb.constraints != inActiveConstraintsAndGrounded)
+                {
+                    rb.constraints = inActiveConstraintsAndGrounded;
+                    Debug.Log("setting inactive when on ground");
+                }
+                else if(!isOnGround && rb.constraints != inActiveConstraints )
+                {
+                    rb.constraints = inActiveConstraints;
+
+                    Debug.Log("setting inactive when in air");
+                }
 
             }
-            else if (isActivePlayer && rb.constraints != originalRbConstraints)
+            else if (isActivePlayer && (rb.constraints == inActiveConstraints || rb.constraints == inActiveConstraintsAndGrounded))
             {
                 rb.constraints = originalRbConstraints;
                 Debug.Log("setting active");
