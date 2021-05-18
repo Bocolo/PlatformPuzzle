@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using Platformer.DeadPlayer;
 namespace Platformer.Player
 {
 
@@ -12,13 +12,13 @@ namespace Platformer.Player
         [SerializeField] GameObject deadSprite;
         [SerializeField] float enableInputTime=2f;
         [SerializeField] bool isDeadResetAutomatic =false;
+        public bool hasDeadSprite = true;
       //  [SerializeField] float resetDeadCounter =2f;
          GameObject deadSpriteClone = null;
         public  bool isDead = false;
         bool isInputEnabled = true;
-         bool canPlayerMove =true;
         public bool hasDeathAnimation = true;
-        SpriteRenderer player;
+        SpriteRenderer playerSprite;
         SpriteRenderer deadSpriteRenderer;
         PlayerController playerController;
         
@@ -26,7 +26,7 @@ namespace Platformer.Player
       
         private void Start()
         {
-           player = GetComponent<SpriteRenderer>();
+           playerSprite = GetComponent<SpriteRenderer>();
            playerController = GetComponent<PlayerController>();
             rb = GetComponent<Rigidbody2D>();
            
@@ -38,8 +38,16 @@ namespace Platformer.Player
         }
         public  void Die()
         {
-        
-            DeadAnimation();
+            //Temporary fixes, Require animations etc
+            //Temporary fixes, Require animations etc
+            if (hasDeadSprite)
+            {
+                DeadAnimation();
+            }
+            else
+            {
+                DisablePlayer();
+            }
             isDead = true;
            
         }
@@ -48,9 +56,31 @@ namespace Platformer.Player
             isInputEnabled = true;
            
         }
-        void DeadAnimation()
+        void EnablePlayer()// (bool enablePlayer)
+        {
+            /*     if (enablePlayer)
+                 {
+                     playerController.enabled = true;
+                     playerSprite.enabled = true;
+                 }
+                 else
+                 {
+                     playerController.enabled = false;
+                     playerSprite.enabled = false;
+                 }*/
+            playerController.enabled = true;
+            playerSprite.enabled = true;
+        }
+        void DisablePlayer()
         {
             playerController.enabled = false;
+            playerSprite.enabled = false;
+        }
+        void DeadAnimation()
+        {
+            /*      playerController.enabled = false;
+                  playerSprite.enabled = false;*/
+            DisablePlayer();
             isInputEnabled = false;
             transform.parent = null;
             if (deadSpriteClone == null)
@@ -58,20 +88,23 @@ namespace Platformer.Player
                 deadSpriteClone = Instantiate(deadSprite, new Vector3(transform.position.x, transform.position.y, -0.1f), transform.rotation);
                 deadSpriteClone.name = "deadSpriteClone";
                 deadSpriteRenderer = deadSpriteClone.GetComponent<SpriteRenderer>();
-                player.enabled = false;
-                deadSpriteRenderer.enabled = true;                              
+         //       deadSpriteClone.GetComponent<DeadFloorCollision>().isGrounded = false;
+                                     
             }
             else
             {
                 deadSpriteRenderer.enabled = false;
                 deadSpriteClone.transform.position = transform.position;
-                player.enabled = false;
-                deadSpriteRenderer.enabled = true;
+
+           //     deadSpriteClone.GetComponent<DeadFloorCollision>().isGrounded = false;
+           
             }
+  
+            deadSpriteRenderer.enabled = true;
 
             //   FreezeContraints();
 
-                Invoke("ResetTransform", 0.5f);
+            Invoke("ResetTransform", 0.5f);
             Invoke("EnableInput", enableInputTime);
         }
    
@@ -94,15 +127,27 @@ namespace Platformer.Player
                 {
                     ResetAfterDeath();
                 }
+            } if (!hasDeadSprite)
+            {
+
             }
         }
         void ResetAfterDeath()
         {
             isDead = false;
             ResetTransform();
+            if (hasDeadSprite)
+            {/*
+                playerSprite.enabled = true;
+                playerController.enabled = true;*/
+                EnablePlayer();
+            }
+            else
+            {
 
-            player.enabled = true;
-            playerController.enabled = true;
+                Invoke("EnablePlayer", .3f);
+
+            }
         }
    
         private void OnCollisionEnter2D(Collision2D collision)

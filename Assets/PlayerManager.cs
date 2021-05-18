@@ -61,7 +61,7 @@ namespace Platformer.Player
 
         }
 
-
+        //NOTE Layer14 is "other player" Layer 11 is " player
         void DeactivateOtherPlayers()
         {
             for (int i = 0; i < players.Length ; i++)
@@ -69,10 +69,12 @@ namespace Platformer.Player
                 if (i != counter)
                 {
                     players[i].GetComponent<PlayerController>().isActivePlayer = false;
+                    players[i].gameObject.layer = 14;
                 }
                 else
                 {
                     players[counter].GetComponent<PlayerController>().isActivePlayer = true;
+                    players[counter].gameObject.layer = 11;
                 }
     
             }

@@ -11,7 +11,11 @@ namespace Platformer.Player
         [SerializeField] float wallSlidingSpeedMax = 2f;        
         [SerializeField] int extraJumpValue = 1;  
         [SerializeField] LayerMask groundLayer;
+        [SerializeField] LayerMask otherPlayerLayer;
+        [SerializeField] LayerMask playerLayer;
+
         [SerializeField] Transform groundCheck;
+        [SerializeField] Transform topCheck;
         [SerializeField] Transform wallCheckLeft;
         [SerializeField] Transform wallCheckRight;    
         [SerializeField] Vector2 wallCubeSize;
@@ -33,10 +37,13 @@ namespace Platformer.Player
         int wallDirX;
         public bool canPlayerMove = true;
         public bool isActivePlayer = true;
+        [SerializeField] bool isAnotherPlayerOnTop;
+        [SerializeField] bool isOnTopOfOtherPlayer;
         PlayerDie player;
          public Vector2 lastPosition;
         RigidbodyConstraints2D originalRbConstraints;
         RigidbodyConstraints2D inActiveConstraints;
+      //  RigidbodyConstraints2D onOtherPlayerConstraints;
         RigidbodyConstraints2D inActiveConstraintsAndGrounded;
    
         private void Start()
@@ -55,7 +62,7 @@ namespace Platformer.Player
             move.x = Input.GetAxis("Horizontal");
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                if (!player.isDead && isActivePlayer )//&& canPlayerMove)
+                if (!player.isDead && isActivePlayer && !isAnotherPlayerOnTop)//&& canPlayerMove) //&& !isAnotherPlayerOnTop is part of temporary solution with movement
                 {
                     isJumping = true;
                     Jump();
@@ -68,7 +75,7 @@ namespace Platformer.Player
                 isJumping = false;
             }
   
-            if (isOnASurface && !isJumping)
+            if ((isOnASurface && !isJumping)|| isOnTopOfOtherPlayer) /// (isOnASurface && !isJumping) original . temp changed for moving with play on tope
             {
                 SetJumpValue();         
             }          
@@ -84,6 +91,14 @@ namespace Platformer.Player
                     Movement(move);
                     WallJump();
                  }
+            //Temporary solution -- allows player to move with active player 
+            //fault -- contact with other objects will push it
+            //is kinermatic on child rb works but will go through walls if overlapping
+
+            if (!player.isDead && !isActivePlayer && isOnTopOfOtherPlayer)
+            {
+                Movement(move);
+            }
             SetRbConstraints();
          
             /*TESTCODE*/
@@ -116,7 +131,12 @@ namespace Platformer.Player
                     rb.constraints = inActiveConstraintsAndGrounded;
                     Debug.Log("setting inactive when on ground");
                 }
-                else if(!isOnGround && rb.constraints != inActiveConstraints )
+                else if (isOnTopOfOtherPlayer && rb.constraints != originalRbConstraints)
+                {
+                    rb.constraints = originalRbConstraints;
+                    Debug.Log("on Top of Player and original constraints");
+                }
+                else if(!isOnGround && rb.constraints != inActiveConstraints && !isOnTopOfOtherPlayer)
                 {
                     rb.constraints = inActiveConstraints;
 
@@ -139,7 +159,7 @@ namespace Platformer.Player
 
         void Jump()
         {
-            if((isOnGround || extraJumpCount > 0) && !isWallSliding)
+            if(((isOnGround || extraJumpCount > 0) && !isWallSliding)|| isOnTopOfOtherPlayer)
             {
                 rb.velocity = Vector2.up * jumpForce;
                 extraJumpCount--;
@@ -194,6 +214,23 @@ namespace Platformer.Player
             isOnGround = Physics2D.OverlapBox(groundCheck.position, groundCubeSize, 0, groundLayer);
             isOnRightWall = Physics2D.OverlapBox(wallCheckRight.position, wallCubeSize, 0, groundLayer);
             isOnLeftWall = Physics2D.OverlapBox(wallCheckLeft.position, wallCubeSize, 0, groundLayer);
+
+            //Do sme active inactive checks here
+            if (isActivePlayer)
+            {
+                isOnTopOfOtherPlayer = Physics2D.OverlapBox(groundCheck.position, groundCubeSize, 0, otherPlayerLayer);
+                isAnotherPlayerOnTop = Physics2D.OverlapBox(topCheck.position, groundCubeSize, 0, otherPlayerLayer);
+            }
+            else
+            {
+                isOnTopOfOtherPlayer = Physics2D.OverlapBox(groundCheck.position, groundCubeSize, 0,playerLayer);
+                isAnotherPlayerOnTop = Physics2D.OverlapBox(topCheck.position, groundCubeSize, 0, playerLayer);
+    /*            Collider2D otherPlayer = Physics2D.OverlapBox(groundCheck.position, groundCubeSize, 0, playerLayer);
+                otherPlayer.gameObject.transform.parent = gameObject.transform;*/
+                
+            }
+
+
         }
         void CheckingWallDirection()
         {
@@ -210,23 +247,36 @@ namespace Platformer.Player
         }
         private void OnDrawGizmos()
         {
-        /*    Gizmos.color = Color.white;
-        
+            Gizmos.color = Color.white;
+
             Gizmos.DrawWireCube(wallCheckLeft.position, wallCubeSize);
+            Gizmos.color = Color.red;
             Gizmos.DrawWireCube(wallCheckRight.position, wallCubeSize);
-            Gizmos.DrawWireCube(groundCheck.position, groundCubeSize);*/
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireCube(groundCheck.position, groundCubeSize);
+            Gizmos.color = Color.blue;
+            Gizmos.DrawWireCube(topCheck.position, groundCubeSize);
+
         }
-         
+
         private void OnCollisionStay2D(Collision2D collision)
         {
             if (collision.gameObject.CompareTag("Platform"))
             {
                 transform.parent = collision.transform;
             }
+            //Parenting transform is not working with active player
+    /*        if (collision.gameObject.CompareTag("Player") && !isActivePlayer && isOnTopOfOtherPlayer)
+            {
+                Debug.Log("setting active player as transform");
+                transform.parent = collision.transform;
+              //  collision.gameObject.GetComponent<Rigidbody2D>().
+                //  rb.constraints = originalRbConstraints;
+            }*/
 
         }
 
-      
+
         private void OnCollisionExit2D(Collision2D collision)
         {
 
@@ -235,12 +285,19 @@ namespace Platformer.Player
                 transform.parent = null;
             }
 
-
+        
         }
       
 
     }
 }
+
+/*            if (collision.gameObject.CompareTag("Player") && !isActivePlayer && isOnTopOfOtherPlayer)
+            {
+                Debug.Log("setting active player as transform");
+                transform.parent = collision.transform;
+                rb.constraints = originalRbConstraints;
+            }*/
 
 /*        isGrounded = false;
         isOnWall = false;

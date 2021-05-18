@@ -50,7 +50,7 @@ namespace Platformer.Camera
                     counter = 0;
                 }
             }*/
-            if (currentPlayer.isDead)
+            if (currentPlayer.isDead && currentPlayer.hasDeadSprite)
             {
                 SetTargetToDead();
                 position.y = Mathf.Lerp(this.transform.position.y, deadTarget.transform.position.y + yOffset, interpolation);
