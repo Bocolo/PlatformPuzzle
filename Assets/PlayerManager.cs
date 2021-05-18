@@ -5,16 +5,13 @@ using Platformer.Camera;
 
 namespace Platformer.Player
 {
- //   public class PlayerManager<T> : MonoBehaviour where T: MonoBehaviour
+
     public class PlayerManager : MonoBehaviour 
     {
         private static PlayerManager _instance;
         public static PlayerManager Instance => _instance;
-        // Camera mainCamera;
         public PlayerDie[] players;
         [SerializeField] CameraFollow cameraFollow;
-
-        PlayerDie currentPlayer;
         int previousPlayerPosition;
         int counter = 0;
 
@@ -35,29 +32,49 @@ namespace Platformer.Player
         {
             cameraFollow.currentPlayer = players[counter];
             previousPlayerPosition = counter;
-         //   numberOfPlayers = players.Length;
+            DeactivateOtherPlayers();    
+      
         }
+
         private void Update()
         {
+           
             if (counter != previousPlayerPosition)
             {
                 cameraFollow.currentPlayer = players[counter];
                 previousPlayerPosition = counter;
-                Debug.Log("Updating camera positin with active player");
+                DeactivateOtherPlayers();
             }
             if (Input.GetKeyDown(KeyCode.Q))
             {
-                //  Debug.Log(players.Length);
-                // Debug.Log(numberOfPlayers);
+             
                 if (players.Length > counter + 1)
                 {
-                    // currentPlayer = players[counter + 1];
+               
                     counter++;
                 }
                 else
                 {
                     counter = 0;
                 }
+            }
+
+        }
+
+
+        void DeactivateOtherPlayers()
+        {
+            for (int i = 0; i < players.Length ; i++)
+            {
+                if (i != counter)
+                {
+                    players[i].GetComponent<PlayerController>().isActivePlayer = false;
+                }
+                else
+                {
+                    players[counter].GetComponent<PlayerController>().isActivePlayer = true;
+                }
+    
             }
         }
     }

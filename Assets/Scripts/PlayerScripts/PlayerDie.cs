@@ -14,10 +14,11 @@ namespace Platformer.Player
          GameObject deadSpriteClone = null;
         public  bool isDead = false;
         bool isInputEnabled = true;
+         bool canPlayerMove =true;
+        public bool hasDeathAnimation = true;
         SpriteRenderer player;
         SpriteRenderer deadSpriteRenderer;
         PlayerController playerController;
-       // GameObject deadSpriteClone =null;
         List<GameObject> cloneList = new List<GameObject>();
         Rigidbody2D rb;
         RigidbodyConstraints2D originalConstraints;
@@ -31,12 +32,11 @@ namespace Platformer.Player
         private void Update()
         {
             ResetPosition();
+         
         }
         public  void Die()
         {
-        //    Debug.Log("YouDied");
-            //Leave body copy behind
-            //on push 
+        
             DeadAnimation();
             isDead = true;
            
@@ -56,9 +56,7 @@ namespace Platformer.Player
                 deadSpriteClone = Instantiate(deadSprite, new Vector3(transform.position.x, transform.position.y, -0.1f), transform.rotation);
                 deadSpriteClone.name = "deadSpriteClone";
                 deadSpriteRenderer = deadSpriteClone.GetComponent<SpriteRenderer>();
-                //  Debug.Log(transform.position);
-                   player.enabled = false;
-            //    player.gameObject.SetActive(false);
+                player.enabled = false;
                 deadSpriteRenderer.enabled = true;                              
             }
             else
@@ -66,15 +64,11 @@ namespace Platformer.Player
                 deadSpriteRenderer.enabled = false;
                 deadSpriteClone.transform.position = transform.position;
                 player.enabled = false;
-           //     player.gameObject.SetActive(false);
                 deadSpriteRenderer.enabled = true;
-            //    Debug.Log("2: " +transform.position);
             }
 
             //   FreezeContraints();
 
-            //this isn;t working right
-         //   transform.position = startPoint.position;
                 Invoke("ResetTransform", 0.5f);
             Invoke("EnableInput", enableInputTime);
         }
@@ -98,6 +92,7 @@ namespace Platformer.Player
                     playerController.enabled = true;
 
                 }
+           
             }
         }
         void FreezeContraints()
@@ -114,6 +109,10 @@ namespace Platformer.Player
             if (collision.gameObject.CompareTag("Danger") && !isDead)
             {
                 Die();
+            }
+            if (collision.gameObject.CompareTag("Player"))
+            {
+                rb.velocity = new Vector2(0f, rb.velocity.y);
             }
         }
     }

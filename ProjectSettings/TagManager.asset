@@ -9,6 +9,7 @@ TagManager:
   - Danger
   - DeadPlayer
   - Lever
+  - Portal
   layers:
   - Default
   - TransparentFX
@@ -23,7 +24,7 @@ TagManager:
   - DeadBody
   - Player
   - Bouncy
-  - 
+  - Portal
   - 
   - 
   - 

@@ -31,15 +31,21 @@ namespace Platformer.Player
         bool isJumping;
         bool isWallSliding;
         int wallDirX;
+        public bool canPlayerMove = true;
+        public bool isActivePlayer = true;
         PlayerDie player;
-
+         public Vector2 lastPosition;
+        RigidbodyConstraints2D originalRbConstraints;
+        RigidbodyConstraints2D inActiveConstraints;
    
         private void Start()
         {
             rb = GetComponent<Rigidbody2D>();
             extraJumpCount = extraJumpValue;
             player = GetComponent<PlayerDie>();
-         
+            originalRbConstraints = rb.constraints;
+            inActiveConstraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezeRotation;
+
         }
        
         private void Update()
@@ -47,17 +53,19 @@ namespace Platformer.Player
             move.x = Input.GetAxis("Horizontal");
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                if (!player.isDead)
+                if (!player.isDead && isActivePlayer )//&& canPlayerMove)
                 {
                     isJumping = true;
                     Jump();
                     SetWallJumping();
                 }
             }
+          
             else
             {
                 isJumping = false;
             }
+  
             if (isOnASurface && !isJumping)
             {
                 SetJumpValue();         
@@ -67,20 +75,40 @@ namespace Platformer.Player
             {
                 rb.velocity = new Vector2(rb.velocity.x, Mathf.Clamp(rb.velocity.y, -wallSlidingSpeedMax, float.MaxValue));
             }
-            if (!player.isDead)
-            {
-                Movement(move);
-                WallJump();
-            }
+
+       
+            if (!player.isDead && isActivePlayer)
+                {
+                    Movement(move);
+                    WallJump();
+                 }
+            SetRbConstraints();
+         
+            /*TESTCODE*/
             SetWallSliding();
             SetSurfaceBools();  
             CheckingWallDirection();
         }
+      
+        void SetRbConstraints()
+        {
+            if (!isActivePlayer && rb.constraints != inActiveConstraints)
+            {
+                rb.constraints = inActiveConstraints;
+                Debug.Log("setting inactive");
+
+            }
+            else if (isActivePlayer && rb.constraints != originalRbConstraints)
+            {
+                rb.constraints = originalRbConstraints;
+                Debug.Log("setting active");
+            }
+        }
         void Movement(Vector2 move)
         {
-          //  rb.velocity = new Vector2(move.x * speed, rb.velocity.y);
-            Vector2 targetVel = new Vector2(move.x * speed, rb.velocity.y);
-            rb.velocity = Vector3.SmoothDamp(rb.velocity, targetVel, ref zeroVelocity, m_MovementSmoothing);
+         // rb.velocity = new Vector2(move.x * speed, rb.velocity.y);
+           Vector2 targetVel = new Vector2(move.x * speed, rb.velocity.y);
+           rb.velocity = Vector3.SmoothDamp(rb.velocity, targetVel, ref zeroVelocity, m_MovementSmoothing);
         }
 
         void Jump()
@@ -93,8 +121,6 @@ namespace Platformer.Player
         }
         void WallJump()
         {
-
-
             if (isAllowedToWallJump) //&&(move.x == wallDirX || move.x ==0)
             {
                 rb.velocity = new Vector2(wallForce.x * -wallDirX, wallForce.y);//-move.x//wallDirX
@@ -214,6 +240,18 @@ namespace Platformer.Player
  
  
 */
+
+/* ORIGINAL CODE             */
+/*       if (!player.isDead)// && canPlayerMove)
+                   {
+                      Movement(move);
+                       WallJump();
+                   }*/
+/* ORIGINAL CODE             */
+/*    if (!canPlayerMove)
+      {
+          transform.position = lastPosition;
+      }*/
 //old variables
 /*
  * 
