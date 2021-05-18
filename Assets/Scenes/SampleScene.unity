@@ -1185,6 +1185,7 @@ MonoBehaviour:
   deadSprite: {fileID: 7533038456199850296, guid: c120f1782b2adb446aa1bb8f7b09889c,
     type: 3}
   enableInputTime: 1
+  isDeadResetAutomatic: 0
   isDead: 0
   hasDeathAnimation: 1
 --- !u!1 &284211307
@@ -14124,6 +14125,7 @@ MonoBehaviour:
   deadSprite: {fileID: 7533038456199850296, guid: c120f1782b2adb446aa1bb8f7b09889c,
     type: 3}
   enableInputTime: 1
+  isDeadResetAutomatic: 0
   isDead: 0
   hasDeathAnimation: 1
 --- !u!114 &870846039

@@ -11,6 +11,8 @@ namespace Platformer.Player
         [SerializeField] Transform startPoint;
         [SerializeField] GameObject deadSprite;
         [SerializeField] float enableInputTime=2f;
+        [SerializeField] bool isDeadResetAutomatic =false;
+      //  [SerializeField] float resetDeadCounter =2f;
          GameObject deadSpriteClone = null;
         public  bool isDead = false;
         bool isInputEnabled = true;
@@ -19,15 +21,15 @@ namespace Platformer.Player
         SpriteRenderer player;
         SpriteRenderer deadSpriteRenderer;
         PlayerController playerController;
-        List<GameObject> cloneList = new List<GameObject>();
+        
         Rigidbody2D rb;
-        RigidbodyConstraints2D originalConstraints;
+      
         private void Start()
         {
            player = GetComponent<SpriteRenderer>();
            playerController = GetComponent<PlayerController>();
             rb = GetComponent<Rigidbody2D>();
-            originalConstraints = rb.constraints;
+           
         }
         private void Update()
         {
@@ -81,39 +83,35 @@ namespace Platformer.Player
         {
             if (isInputEnabled)
             {
-                if ((Input.GetKeyDown(KeyCode.Space) || Input.GetAxis("Horizontal") > 0 || Input.GetAxis("Horizontal") < 0) && isDead)
+                if (!isDeadResetAutomatic)
                 {
-                   
-             //       UnFreezeConstraints();
-                    isDead = false;
-                    ResetTransform();
-                  
-                    player.enabled = true;
-                    playerController.enabled = true;
-
+                    if ((Input.GetKeyDown(KeyCode.Space) || Input.GetAxis("Horizontal") > 0 || Input.GetAxis("Horizontal") < 0) && isDead)
+                    {
+                        ResetAfterDeath();
+                    }
                 }
-           
+                else if(isDead)
+                {
+                    ResetAfterDeath();
+                }
             }
         }
-        void FreezeContraints()
+        void ResetAfterDeath()
         {
-            rb.constraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezePositionY;
-        }
-        void UnFreezeConstraints()
-        {
-            rb.constraints = originalConstraints;
-        }
+            isDead = false;
+            ResetTransform();
 
+            player.enabled = true;
+            playerController.enabled = true;
+        }
+   
         private void OnCollisionEnter2D(Collision2D collision)
         {
             if (collision.gameObject.CompareTag("Danger") && !isDead)
             {
                 Die();
             }
-            if (collision.gameObject.CompareTag("Player"))
-            {
-                rb.velocity = new Vector2(0f, rb.velocity.y);
-            }
+       
         }
     }
 }
