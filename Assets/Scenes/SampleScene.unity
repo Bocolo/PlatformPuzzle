@@ -1071,9 +1071,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd5ef2b6de9ecc049bb667c0ad262d51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hasJoint: 0
-  breakForce: 100
-  speed: 4
   jumpForce: 6.5
   wallSlidingSpeedMax: 2
   wallJumpTime: 0.2
@@ -1095,11 +1092,7 @@ MonoBehaviour:
   groundCubeSize: {x: 0.92, y: 0.1}
   wallForce: {x: 7, y: 7}
   activeSprite: {fileID: 2012402925}
-  m_MovementSmoothing: 0.144
   isActivePlayer: 1
-  isAnotherPlayerOnTop: 0
-  isOnTopOfOtherPlayer: 0
-  isOnTopAndShouldMove: 0
 --- !u!50 &273687965
 Rigidbody2D:
   serializedVersion: 4
@@ -1179,7 +1172,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 273687963}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -38, y: -3.4, z: 0}
+  m_LocalPosition: {x: -38, y: -3.5, z: 0}
   m_LocalScale: {x: 0.95, y: 0.95, z: 1}
   m_Children:
   - {fileID: 2098342904}
@@ -14541,9 +14534,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd5ef2b6de9ecc049bb667c0ad262d51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hasJoint: 0
-  breakForce: 100
-  speed: 4
   jumpForce: 5
   wallSlidingSpeedMax: 2
   wallJumpTime: 0.2
@@ -14565,11 +14555,7 @@ MonoBehaviour:
   groundCubeSize: {x: 2.8, y: 0.1}
   wallForce: {x: 6, y: 6}
   activeSprite: {fileID: 111873693}
-  m_MovementSmoothing: 0.144
   isActivePlayer: 1
-  isAnotherPlayerOnTop: 0
-  isOnTopOfOtherPlayer: 0
-  isOnTopAndShouldMove: 0
 --- !u!50 &870846044
 Rigidbody2D:
   serializedVersion: 4
@@ -14649,7 +14635,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 870846037}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -41.9, y: -3.4, z: 0}
+  m_LocalPosition: {x: -41.9, y: -3.5, z: 0}
   m_LocalScale: {x: 2.95, y: 0.95, z: 1}
   m_Children:
   - {fileID: 111873692}
@@ -86705,9 +86691,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd5ef2b6de9ecc049bb667c0ad262d51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hasJoint: 0
-  breakForce: 100
-  speed: 4
   jumpForce: 8
   wallSlidingSpeedMax: 2
   wallJumpTime: 0.2
@@ -86729,11 +86712,7 @@ MonoBehaviour:
   groundCubeSize: {x: 0.8, y: 0.1}
   wallForce: {x: 8, y: 8}
   activeSprite: {fileID: 2062659437}
-  m_MovementSmoothing: 0.144
   isActivePlayer: 1
-  isAnotherPlayerOnTop: 0
-  isOnTopOfOtherPlayer: 0
-  isOnTopAndShouldMove: 0
 --- !u!50 &1619652604
 Rigidbody2D:
   serializedVersion: 4
@@ -86813,7 +86792,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1619652597}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -39.68, y: -2.34, z: 0}
+  m_LocalPosition: {x: -39.68, y: -2.5, z: 0}
   m_LocalScale: {x: 0.95, y: 2.95, z: 1}
   m_Children:
   - {fileID: 435169753}

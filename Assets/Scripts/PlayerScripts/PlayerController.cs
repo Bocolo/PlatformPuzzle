@@ -5,11 +5,9 @@ using UnityEngine;
 namespace Platformer.Player
 {
     public class PlayerController : MonoBehaviour
-    {
-        public bool hasJoint = false;
-        FixedJoint2D fj;
-        [SerializeField] int breakForce;
-        [SerializeField] float speed = 4f;
+    {                 
+        int breakForce =100;
+        float speed = 4f;
         [SerializeField] float jumpForce = 10f;
         [SerializeField] float wallSlidingSpeedMax = 2f;
         [SerializeField] float wallJumpTime = .05f;
@@ -23,14 +21,13 @@ namespace Platformer.Player
         [SerializeField] Transform wallCheckRight;    
         [SerializeField] Vector2 wallCubeSize;
         [SerializeField] Vector2 groundCubeSize;
-        [SerializeField] Vector2 wallForce;
-     
+        [SerializeField] Vector2 wallForce;     
         [SerializeField] SpriteRenderer activeSprite ;
-        [Range(0, .3f)] [SerializeField] private float m_MovementSmoothing = .05f;
-        Vector3 zeroVelocity = Vector3.zero;
-        Vector2 move;
-        Rigidbody2D rb;
+//        [Range(0, .3f)] [SerializeField] private float m_MovementSmoothing = .05f;
+  //      Vector3 zeroVelocity = Vector3.zero;
+       
         int extraJumpCount;
+        public bool hasJoint = false;
         bool isOnGround = false;
         bool isOnRightWall = false;
         bool isOnLeftWall = false;
@@ -40,17 +37,19 @@ namespace Platformer.Player
         bool isAllowedToWallJump = false;
         bool isJumping;
         bool isWallSliding;
-        int wallDirX;       
+        bool isAnotherPlayerOnTop;
+         public bool isOnTopOfOtherPlayer;
         public bool isActivePlayer = false;
-        [SerializeField] bool isAnotherPlayerOnTop;
-        [SerializeField] bool isOnTopOfOtherPlayer;
-        PlayerController playerOnTop;
+        int wallDirX;
+        Vector2 move;
+        Rigidbody2D rb;
+        FixedJoint2D fj;
         PlayerDie player;        
         RigidbodyConstraints2D originalRbConstraints;
         RigidbodyConstraints2D inActiveConstraints;
         RigidbodyConstraints2D onTopOfPlayerConstraints;
         RigidbodyConstraints2D inActiveConstraintsAndGrounded;
-        public bool isOnTopAndShouldMove = false;
+
         private void Start()
         {
             rb = GetComponent<Rigidbody2D>();
@@ -66,8 +65,7 @@ namespace Platformer.Player
        
         private void Update()
         { 
-            move.x = Input.GetAxis("Horizontal");
-       
+            move.x = Input.GetAxis("Horizontal");       
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 if (!player.isDead && isActivePlayer && !isAnotherPlayerOnTop)
@@ -85,56 +83,32 @@ namespace Platformer.Player
             {
                 SetJumpValue();         
             }                 
-            if (isWallSliding && rb != null)
+            if (isWallSliding)
             {
                 rb.velocity = new Vector2(rb.velocity.x, Mathf.Clamp(rb.velocity.y, -wallSlidingSpeedMax, float.MaxValue));
             }       
-            if (!player.isDead && isActivePlayer && rb!=null)
+            if (!player.isDead && isActivePlayer)
                 {
                     Movement(move);
                     WallJump();
                  }
-            if (isActivePlayer)
-            {
-                isOnTopAndShouldMove = false;
-            }
-       
             SetActiveSprite();
             SetWallSliding();
             SetSurfaceBools();  
-            CheckingWallDirection();
-       
+            CheckingWallDirection();       
             SetRbConstraintsForJoints();
             if (isActivePlayer)
             {
                 if (fj != null)
                 {
-                    // fj = null;
                     Destroy(GetComponent<FixedJoint2D>());
                     hasJoint = false;
-                    Debug.Log("REMOVING FJ0");
                 }
             }
             if (fj == null && hasJoint)
             {
                 hasJoint = false;
-                Debug.Log("change joint bool to false");
             }
-        }
-       
-        private void FixedUpdate()
-        {
-         /*       if (((Mathf.Round(oldtransform.x * 100)) / 100 == (Mathf.Round(transform.position.x * 100)) / 100) || move.x==0)
-                {
-                
-                    ismoving = false;
-                }
-                else
-                {
-                    oldtransform = transform.position;
-       
-                    ismoving = true;
-                }*/
         }
 
         void SetRbConstraintsForJoints()
@@ -163,56 +137,13 @@ namespace Platformer.Player
             {
                 rb.constraints = originalRbConstraints;
             }
-        }
-        void SetRbConstraints()
-        {        
-            if (!isActivePlayer)// && (rb.constraints != inActiveConstraints || rb.constraints != inActiveConstraintsAndGrounded)
-            {             
-                if (isOnGround && rb.constraints != inActiveConstraintsAndGrounded && !isOnTopOfOtherPlayer)// && !isOnTopAndShouldMove)
-                {
-                    rb.constraints = inActiveConstraintsAndGrounded;
-                }
-                else if (isOnTopAndShouldMove && rb.constraints != onTopOfPlayerConstraints) // && rb.constraints != originalRbConstraints)// && isOnTopAndShouldMove
-                {
-                    rb.constraints = onTopOfPlayerConstraints;
-                }
-                else if(!isOnGround && rb.constraints != inActiveConstraints &&!isOnTopAndShouldMove)// && !isOnTopOfOtherPlayer)
-                {
-                    rb.constraints = inActiveConstraints;
-                }
-
-            }
-            else if (isActivePlayer && (rb.constraints == inActiveConstraints || rb.constraints == inActiveConstraintsAndGrounded ||rb.constraints == onTopOfPlayerConstraints))
-            {
-                rb.constraints = originalRbConstraints;
-            }
-        }
+        }    
         public void Movement(Vector2 move)
         {
           rb.velocity = new Vector2(move.x * speed, rb.velocity.y);
       //     Vector2 targetVel = new Vector2(move.x * speed, rb.velocity.y);
         //   rb.velocity = Vector3.SmoothDamp(rb.velocity, targetVel, ref zeroVelocity, m_MovementSmoothing);
-
-       /*     if (playerOnTop != null && ismoving)
-            {
-                //   playerOnTop.transform.position = new Vector3(gameObject.transform.position.x - distanceXY, playerOnTop.transform.position.y, 0);
-                playerOnTop.isOnTopAndShouldMove = true;
-                Debug.Log("SHOULD M");
-            }
-            if (playerOnTop != null && !ismoving)
-            {
-                Debug.Log("SHOULD not move");
-                playerOnTop.isOnTopAndShouldMove = false;
-            }*/
-      
         }
-/*            public void MoveWhenOnTop(Vector2 move)
-        {
-            Debug.Log("SHOULD MOVE on top");
-            Vector2 targetVel = new Vector2(move.x * speed, rb.velocity.y);
-            rb.velocity = Vector3.SmoothDamp(rb.velocity, targetVel, ref zeroVelocity, m_MovementSmoothing);
-
-        }*/
         void Jump()
         {
             if(((isOnGround || extraJumpCount > 0) && !isWallSliding)|| isOnTopOfOtherPlayer)
@@ -264,8 +195,7 @@ namespace Platformer.Player
             {
                 extraJumpCount = extraJumpValue;
             }
-        }
-                        
+        }                        
         void SetSurfaceBools()
         {
             if (isOnLeftWall || isOnRightWall || isOnGround)
@@ -354,33 +284,15 @@ namespace Platformer.Player
                 fj.enableCollision = true;
                 fj.breakForce = breakForce;
 
-            }
-      
+            }      
         }
         private void OnCollisionExit2D(Collision2D collision)
-        {
- 
+        { 
             if (collision.gameObject.CompareTag("Platform"))
             {
                 transform.parent = null;
             }
-      /*      if (collision.gameObject.CompareTag("Player") && !isOnTopOfOtherPlayer && hasJoint)
-            {
-           
-                if (fj != null)
-                {
-                    Destroy(GetComponent<FixedJoint2D>());
-                    hasJoint = false;
-                    Debug.Log("Working on exit");
-                }
-         
-
-            }*/
-
-
         }
-  
-
     }
 }
 
