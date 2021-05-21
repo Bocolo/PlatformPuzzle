@@ -6,15 +6,17 @@ namespace Platformer.Player
 {
     public class PlayerController : MonoBehaviour
     {
-        public bool ismoving;
+        public bool hasJoint = false;
+        FixedJoint2D fj;
+        [SerializeField] int breakForce;
         [SerializeField] float speed = 4f;
         [SerializeField] float jumpForce = 10f;
-        [SerializeField] float wallSlidingSpeedMax = 2f;        
+        [SerializeField] float wallSlidingSpeedMax = 2f;
+        [SerializeField] float wallJumpTime = .05f;
         [SerializeField] int extraJumpValue = 1;  
         [SerializeField] LayerMask groundLayer;
         [SerializeField] LayerMask otherPlayerLayer;
-        [SerializeField] LayerMask playerLayer;
-        bool isDifSelected = false;
+        [SerializeField] LayerMask playerLayer;     
         [SerializeField] Transform groundCheck;
         [SerializeField] Transform topCheck;
         [SerializeField] Transform wallCheckLeft;
@@ -22,7 +24,7 @@ namespace Platformer.Player
         [SerializeField] Vector2 wallCubeSize;
         [SerializeField] Vector2 groundCubeSize;
         [SerializeField] Vector2 wallForce;
-        [SerializeField] float wallJumpTime= .05f;
+     
         [SerializeField] SpriteRenderer activeSprite ;
         [Range(0, .3f)] [SerializeField] private float m_MovementSmoothing = .05f;
         Vector3 zeroVelocity = Vector3.zero;
@@ -32,26 +34,22 @@ namespace Platformer.Player
         bool isOnGround = false;
         bool isOnRightWall = false;
         bool isOnLeftWall = false;
-       public bool isTouchingPlayerLeft = false;
-      public  bool isTouchingPlayerRight = false;
+        bool isTouchingPlayerLeft = false;
+        bool isTouchingPlayerRight = false;
         bool isOnASurface = false;
         bool isAllowedToWallJump = false;
         bool isJumping;
         bool isWallSliding;
-        int wallDirX;
-        public bool canPlayerMove = true;
+        int wallDirX;       
         public bool isActivePlayer = false;
         [SerializeField] bool isAnotherPlayerOnTop;
         [SerializeField] bool isOnTopOfOtherPlayer;
         PlayerController playerOnTop;
-        PlayerDie player;
-         public Vector3 lastPosition;
+        PlayerDie player;        
         RigidbodyConstraints2D originalRbConstraints;
         RigidbodyConstraints2D inActiveConstraints;
+        RigidbodyConstraints2D onTopOfPlayerConstraints;
         RigidbodyConstraints2D inActiveConstraintsAndGrounded;
-        public bool lastPositionIstransform =false;
-        public Vector2 playerUnderneatLastPosition;
-        Vector3 oldtransform;
         public bool isOnTopAndShouldMove = false;
         private void Start()
         {
@@ -60,17 +58,19 @@ namespace Platformer.Player
             player = GetComponent<PlayerDie>();
             originalRbConstraints = rb.constraints;
             inActiveConstraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezeRotation;
+            onTopOfPlayerConstraints = RigidbodyConstraints2D.FreezePositionY | RigidbodyConstraints2D.FreezeRotation;
             inActiveConstraintsAndGrounded = RigidbodyConstraints2D.FreezePosition | RigidbodyConstraints2D.FreezeRotation;
-            oldtransform = transform.position;
+           
 
         }
        
         private void Update()
         { 
             move.x = Input.GetAxis("Horizontal");
+       
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                if (!player.isDead && isActivePlayer && !isAnotherPlayerOnTop)//&& canPlayerMove) //&& !isAnotherPlayerOnTop is part of temporary solution with movement
+                if (!player.isDead && isActivePlayer && !isAnotherPlayerOnTop)
                 {
                     isJumping = true;
                     Jump();
@@ -81,15 +81,15 @@ namespace Platformer.Player
             {
                 isJumping = false;
             }
-            if ((isOnASurface && !isJumping)|| isOnTopOfOtherPlayer) /// (isOnASurface && !isJumping) original . temp changed for moving with play on tope
+            if ((isOnASurface && !isJumping)|| isOnTopOfOtherPlayer) 
             {
                 SetJumpValue();         
             }                 
-            if (isWallSliding)
+            if (isWallSliding && rb != null)
             {
                 rb.velocity = new Vector2(rb.velocity.x, Mathf.Clamp(rb.velocity.y, -wallSlidingSpeedMax, float.MaxValue));
             }       
-            if (!player.isDead && isActivePlayer)
+            if (!player.isDead && isActivePlayer && rb!=null)
                 {
                     Movement(move);
                     WallJump();
@@ -98,14 +98,28 @@ namespace Platformer.Player
             {
                 isOnTopAndShouldMove = false;
             }
-            SetRbConstraints();
+       
             SetActiveSprite();
             SetWallSliding();
             SetSurfaceBools();  
             CheckingWallDirection();
-            SetArrayOfPlayers();
-    
        
+            SetRbConstraintsForJoints();
+            if (isActivePlayer)
+            {
+                if (fj != null)
+                {
+                    // fj = null;
+                    Destroy(GetComponent<FixedJoint2D>());
+                    hasJoint = false;
+                    Debug.Log("REMOVING FJ0");
+                }
+            }
+            if (fj == null && hasJoint)
+            {
+                hasJoint = false;
+                Debug.Log("change joint bool to false");
+            }
         }
        
         private void FixedUpdate()
@@ -122,17 +136,45 @@ namespace Platformer.Player
                     ismoving = true;
                 }*/
         }
+
+        void SetRbConstraintsForJoints()
+        {
+            if (!isActivePlayer)
+            {
+                if (isOnGround && rb.constraints != inActiveConstraintsAndGrounded && !isOnTopOfOtherPlayer)
+                {
+                    rb.constraints = inActiveConstraintsAndGrounded;
+                }
+                else if (isOnTopOfOtherPlayer && rb.constraints != onTopOfPlayerConstraints &&!hasJoint)
+                {
+                    rb.constraints = onTopOfPlayerConstraints;
+                }
+                else if(isOnTopOfOtherPlayer && rb.constraints != originalRbConstraints && hasJoint)
+                {
+                    rb.constraints = originalRbConstraints;
+                }
+                else if (!isOnGround && rb.constraints != inActiveConstraints && !isOnTopOfOtherPlayer)
+                {
+                    rb.constraints = inActiveConstraints;
+                }
+
+            }
+            else if (isActivePlayer && (rb.constraints == inActiveConstraints || rb.constraints == inActiveConstraintsAndGrounded || rb.constraints == onTopOfPlayerConstraints))
+            {
+                rb.constraints = originalRbConstraints;
+            }
+        }
         void SetRbConstraints()
         {        
             if (!isActivePlayer)// && (rb.constraints != inActiveConstraints || rb.constraints != inActiveConstraintsAndGrounded)
             {             
-                if (isOnGround && rb.constraints != inActiveConstraintsAndGrounded)// && !isOnTopAndShouldMove)
+                if (isOnGround && rb.constraints != inActiveConstraintsAndGrounded && !isOnTopOfOtherPlayer)// && !isOnTopAndShouldMove)
                 {
                     rb.constraints = inActiveConstraintsAndGrounded;
                 }
-                else if (isOnTopAndShouldMove && rb.constraints != originalRbConstraints)// && isOnTopAndShouldMove
+                else if (isOnTopAndShouldMove && rb.constraints != onTopOfPlayerConstraints) // && rb.constraints != originalRbConstraints)// && isOnTopAndShouldMove
                 {
-                    rb.constraints = originalRbConstraints;
+                    rb.constraints = onTopOfPlayerConstraints;
                 }
                 else if(!isOnGround && rb.constraints != inActiveConstraints &&!isOnTopAndShouldMove)// && !isOnTopOfOtherPlayer)
                 {
@@ -140,7 +182,7 @@ namespace Platformer.Player
                 }
 
             }
-            else if (isActivePlayer && (rb.constraints == inActiveConstraints || rb.constraints == inActiveConstraintsAndGrounded))
+            else if (isActivePlayer && (rb.constraints == inActiveConstraints || rb.constraints == inActiveConstraintsAndGrounded ||rb.constraints == onTopOfPlayerConstraints))
             {
                 rb.constraints = originalRbConstraints;
             }
@@ -223,34 +265,7 @@ namespace Platformer.Player
                 extraJumpCount = extraJumpValue;
             }
         }
-        void SetArrayOfPlayers()
-        {
-            Collider2D[] listOfPlayersOnTop;
-            if (isActivePlayer)
-            {
-                listOfPlayersOnTop = Physics2D.OverlapBoxAll(topCheck.position, groundCubeSize, 0, otherPlayerLayer);
-                Debug.Log(listOfPlayersOnTop.Length);
-                for (int i = 0; i < listOfPlayersOnTop.Length; i++)
-                {
-                    PlayerController pc = listOfPlayersOnTop[i].GetComponent<PlayerController>();
-                    pc.isOnTopAndShouldMove = true;
-                  
-                    //HAVE TO DO A MOVEMENT CHECK -- IS CURRENT PLAYER STILL MOVING, STALL MOVEMENT
-
-                    if (((!isOnLeftWall || !isTouchingPlayerLeft) && move.x < 0) || ((!isOnRightWall || !isTouchingPlayerRight) && move.x > 0))
-                    {
-                        pc.Movement(move);
-                      
-                        pc.isOnTopAndShouldMove = true;
-                    }
-                    if (((isOnLeftWall || isTouchingPlayerLeft) && move.x < 0) || ((isOnRightWall || isTouchingPlayerRight) && move.x > 0))
-                    {
-                        pc.isOnTopAndShouldMove = false;
-                    }
-                }
-            }
-         
-        }
+                        
         void SetSurfaceBools()
         {
             if (isOnLeftWall || isOnRightWall || isOnGround)
@@ -276,7 +291,16 @@ namespace Platformer.Player
             }
             else
             {
-                isOnTopOfOtherPlayer = Physics2D.OverlapBox(groundCheck.position, groundCubeSize, 0,playerLayer);
+                
+                    if (Physics2D.OverlapBox(groundCheck.position, groundCubeSize, 0, playerLayer) || Physics2D.OverlapBox(groundCheck.position, groundCubeSize, 0, otherPlayerLayer))
+                    {
+                        isOnTopOfOtherPlayer = true;
+                    }
+                    else
+                    {
+                        isOnTopOfOtherPlayer = false;
+                    }
+               // isOnTopOfOtherPlayer = Physics2D.OverlapBox(groundCheck.position, groundCubeSize, 0,playerLayer);
                 isAnotherPlayerOnTop = Physics2D.OverlapBox(topCheck.position, groundCubeSize, 0, playerLayer);
 
                 isTouchingPlayerLeft = Physics2D.OverlapBox(wallCheckLeft.position, wallCubeSize, 0, playerLayer);
@@ -311,25 +335,27 @@ namespace Platformer.Player
             Gizmos.DrawWireCube(topCheck.position, groundCubeSize);
 
         }
-      
+
         private void OnCollisionStay2D(Collision2D collision)
         {
             if (collision.gameObject.CompareTag("Platform"))
             {
                 transform.parent = collision.transform;
             }
-
-
-       /*     if (collision.gameObject.CompareTag("Player")
-         && isActivePlayer
-         && isAnotherPlayerOnTop
-         && !collision.gameObject.GetComponent<PlayerController>().isActivePlayer
-         )
+            if (collision.gameObject.CompareTag("Player") && isOnTopOfOtherPlayer && !isActivePlayer && !hasJoint)
             {
-                playerOnTop = collision.gameObject.GetComponent<PlayerController>();
-                Debug.Log("sasda");
-            }*/
+              
+                hasJoint = true;
+                /*   fj = collision.gameObject.AddComponent<FixedJoint2D>();
+                   fj.connectedBody = rb;
+   */
+                fj = gameObject.AddComponent<FixedJoint2D>();
+                fj.connectedBody = collision.gameObject.GetComponent<Rigidbody2D>();
+                fj.enableCollision = true;
+                fj.breakForce = breakForce;
 
+            }
+      
         }
         private void OnCollisionExit2D(Collision2D collision)
         {
@@ -338,7 +364,18 @@ namespace Platformer.Player
             {
                 transform.parent = null;
             }
+      /*      if (collision.gameObject.CompareTag("Player") && !isOnTopOfOtherPlayer && hasJoint)
+            {
+           
+                if (fj != null)
+                {
+                    Destroy(GetComponent<FixedJoint2D>());
+                    hasJoint = false;
+                    Debug.Log("Working on exit");
+                }
          
+
+            }*/
 
 
         }
@@ -346,143 +383,6 @@ namespace Platformer.Player
 
     }
 }
-/*         /* 
- *         
- *            if (collision.gameObject.CompareTag("Player") && !isActivePlayer && !isOnTopOfOtherPlayer)
-            {
-                distanceXY = 0;
-            }
-if(isActivePlayer && rb == null)
-            {*//*
-                gameObject.AddComponent<Rigidbody2D>();
-                rb = GetComponent<Rigidbody2D>();*//*
 
-                rb = gameObject.AddComponent<Rigidbody2D>();
-               //GetComponent<Rigidbody2D>();
-                Debug.Log("Active player asdding rb");
-            }*/
-/* if (collision.gameObject.CompareTag("Player")
-         && isActivePlayer
-         && isAnotherPlayerOnTop
-         && !collision.gameObject.GetComponent<PlayerController>().isActivePlayer
-         )
-        {
-            //   Vector3 difference = 
-            playerOnTop = collision.gameObject.GetComponent<PlayerController>();
-            if (distanceXY == 0)
-            {
-                distanceXY = Mathf.Abs(collision.transform.position.x) - Mathf.Abs(gameObject.transform.position.x);
-                minX = Mathf.Abs(collision.transform.position.x) - Mathf.Abs(wallCheckLeft.transform.position.x);
-                maxX = Mathf.Abs(collision.transform.position.x) - Mathf.Abs(wallCheckRight.transform.position.x);
-             *//*   Debug.Log(minX + "  : minx");
-                Debug.Log(maxX + "  : max");*/
-/*    Debug.Log(gameObject.transform.position.x - minX);
-    Debug.Log(gameObject.transform.position.x - maxX);
-    Debug.Log(distanceXY + "  : dist");
 
-    Debug.Log(gameObject.transform.position.x - distanceXY);
-*/
-/*   float leftMax = playerOnTop.wallCheckLeft.transform.position.x;
-   float rightMax = playerOnTop.wallCheckRight.transform.position.x;
-   Debug.Log(leftMax + "left");
-   Debug.Log(leftMax + collision.transform.position.x + "  left max");
-   float dif = collision.transform.position.x - leftMax;
-   float halfdif = dif / 2;
-   Debug.Log(rightMax + "  right");
 
-   Debug.Log(wallCheckRight.transform.position.x + ".  Right X on bottom");
-   Debug.Log(wallCheckLeft.transform.position.x + ".  Left X on bottom");*//*
-}
-
-//Set the diffence into 
-}*/
-/*gameObject.transform.parent = null;
-            if (rb == null)
-            {
-                gameObject.AddComponent<Rigidbody2D>();
-                rb = GetComponent<Rigidbody2D>();
-                Debug.Log("not on top of player adding Rigidbody");
-            }
-        }*/
-/*      if (collision.gameObject.CompareTag("Player") && !isActivePlayer && isOnTopOfOtherPlayer)// &&!isOnASurface)
-          {
-              gameObject.transform.parent = collision.gameObject.transform;
-              Destroy(GetComponent<Rigidbody2D>());
-              Debug.Log("onPlayer removing rigidbody");
-              rb = null;
-          }*/
-/*
-
-  if (!isDifSelected)
-  {
- //     List<float> diffArray = new List<float>();
-      //Set a value for active player
-       posX = transform.position.x;
-      Debug.Log("psx: " + posX);
-       bottomX = collision.transform.position.x;
-      Debug.Log("bptx: " + bottomX);
-      xDif = posX - bottomX;
-      if (xDif != 0)
-      {
-          isDifSelected = true;
-          origTransform= transform.position;
-      }
-  }
-  gameObject.transform.parent = collision.gameObject.transform;
-  rb.bodyType = RigidbodyType2D.Kinematic;
-
-  Debug.Log("difx: " + xDif);
-       }
-*/
-/*            if (isActivePlayer && rb.bodyType != RigidbodyType2D.Dynamic)
-             {
-                 rb.bodyType = RigidbodyType2D.Dynamic;
-             }
-             if(!isActivePlayer && rb.bodyType != RigidbodyType2D.Dynamic && isOnASurface)
-             {
-                 rb.bodyType = RigidbodyType2D.Dynamic;
-                 Debug.Log("surafce contact rigidbody reset");
-             }*/
-/*
-  if(lastPosition != transform.position)
-  {
-      lastPosition = transform.position;
-      Debug.Log("last position is set");
-  }
-  if(lastPosition == transform.position) && not moving
-  {
-      lastPositionIstransform = true;
-  }
-  else
-  {
-      lastPositionIstransform = false;
-      //using last pos X as max X movement
-  }*/
-/*     if(!isActivePlayer && isOnTopOfOtherPlayer)
-     {
-         Movement(move);
-     }*/
-//Temporary solution -- allows player to move with active player 
-//fault -- contact with other objects will push it
-//is kinermatic on child rb works but will go through walls if overlapping
-
-/* if (!player.isDead && !isActivePlayer && isOnTopOfOtherPlayer)
- {
-     Movement(move);
- }*/
-/*    // if (transpos ==transform.position) //.x == (Mathf.Round(transform.position.x *100))/100)
-            if((Mathf.Round(transpos.x * 100)) / 100 == (Mathf.Round(transform.position.x * 100)) / 100)
-            {
-
-                Debug.Log("sdsdsd");
-                ismoving = false;
-            }
-            else
-            {
-
-                transpos = transform.position;
-             //     transpos.x = transform.position.x;
-                //transpos.x = (Mathf.Round(transform.position.x * 100)) / 100;
-                Debug.Log(transpos.x);
-                ismoving = true;
-            }*/
