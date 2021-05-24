@@ -74,6 +74,7 @@ namespace Platformer.Player
                 else
                 {
                     players[counter].GetComponent<PlayerController>().isActivePlayer = true;
+                    players[counter].GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0); 
                     players[counter].gameObject.layer = 11;
                 }
     

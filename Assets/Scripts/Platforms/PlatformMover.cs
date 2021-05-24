@@ -19,7 +19,7 @@ namespace Platformer.Platforms
         bool playerOnTop;
         private void Start()
         {
-            rb = GetComponent<Rigidbody2D>();
+         //   rb = GetComponent<Rigidbody2D>();
         
         }
 
@@ -31,11 +31,11 @@ namespace Platformer.Platforms
             if (transform.position != wayPoints[currentWayPoint].transform.position)
             {
                 if (isMovedByRigidbody) {
-                    Vector2 v = Vector2.MoveTowards(transform.position,
+                   /* Vector2 v = Vector2.MoveTowards(transform.position,
                          wayPoints[currentWayPoint].transform.position,
                          speed * Time.deltaTime);
                     rb.MovePosition(v);
-                    Debug.Log("moved byrb");
+                    Debug.Log("moved byrb");*/
           
                 }
                 else

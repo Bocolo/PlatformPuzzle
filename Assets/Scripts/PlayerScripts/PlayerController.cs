@@ -5,7 +5,11 @@ using UnityEngine;
 namespace Platformer.Player
 {
     public class PlayerController : MonoBehaviour
-    {                 
+    {
+       // [HideInInspector]
+        public bool hasJoint = false;
+        // [HideInInspector]
+        public bool isOnTopOfOtherPlayer;
         //Choosing to go with Game option B-- multiplayer puzzle.
         //Massive Refactoring to do
         [SerializeField] float speed = 4f;
@@ -25,12 +29,10 @@ namespace Platformer.Player
         [SerializeField] Vector2 groundCubeSize;
         [SerializeField] Vector2 wallForce;     
         [SerializeField] SpriteRenderer activeSprite ;
-       // [HideInInspector]
-        public bool isOnTopOfOtherPlayer;
+
         [HideInInspector]
         public bool isActivePlayer = false;
-        [HideInInspector]
-        public bool hasJoint = false;
+
                [Range(0, .3f)] [SerializeField] private float m_MovementSmoothing = .05f;
               Vector3 zeroVelocity = Vector3.zero;
 
@@ -117,14 +119,14 @@ namespace Platformer.Player
                 {
                     rb.constraints = inActiveConstraintsAndGrounded;
                 }
-            /*    else if (isOnTopOfOtherPlayer && rb.constraints != onTopOfPlayerConstraints && !hasJoint)
-                {
-                    rb.constraints = onTopOfPlayerConstraints;
-                }
+                /*    else if (isOnTopOfOtherPlayer && rb.constraints != onTopOfPlayerConstraints && !hasJoint)
+                    {
+                        rb.constraints = onTopOfPlayerConstraints;
+                    }*/
                 else if (isOnTopOfOtherPlayer && rb.constraints != originalRbConstraints && hasJoint)
                 {
                     rb.constraints = originalRbConstraints;
-                }*/
+                }
                 /*  else if( isOnTopOfOtherPlayer && rb.constraints != inActiveConstraintsAndGrounded)
                       {
                           rb.constraints = inActiveConstraintsAndGrounded;
@@ -217,7 +219,7 @@ namespace Platformer.Player
             {
               
 
-                isOnTopOfOtherPlayer = Physics2D.OverlapBox(groundCheck.position, groundCubeSize, 0, otherPlayerLayer);
+         //       isOnTopOfOtherPlayer = Physics2D.OverlapBox(groundCheck.position, groundCubeSize, 0, otherPlayerLayer);
                 isAnotherPlayerOnTop = Physics2D.OverlapBox(topCheck.position, groundCubeSize, 0, otherPlayerLayer);
 
                 isTouchingPlayerLeft = Physics2D.OverlapBox(wallCheckLeft.position, wallCubeSize, 0, otherPlayerLayer);
@@ -226,16 +228,16 @@ namespace Platformer.Player
             }
             else
             {
-                  
+                  /*
                     if (Physics2D.OverlapBox(groundCheck.position, groundCubeSize, 0, playerLayer) || Physics2D.OverlapBox(groundCheck.position, groundCubeSize, 0, otherPlayerLayer))
                     {
-                        isOnTopOfOtherPlayer = true;
+                //        isOnTopOfOtherPlayer = true;
                     }
                     else
                     {
-                        isOnTopOfOtherPlayer = false;
+                 //       isOnTopOfOtherPlayer = false;
                     }
-               // isOnTopOfOtherPlayer = Physics2D.OverlapBox(groundCheck.position, groundCubeSize, 0,playerLayer);
+               // isOnTopOfOtherPlayer = Physics2D.OverlapBox(groundCheck.position, groundCubeSize, 0,playerLayer);*/
                 isAnotherPlayerOnTop = Physics2D.OverlapBox(topCheck.position, groundCubeSize, 0, playerLayer);
 
                 isTouchingPlayerLeft = Physics2D.OverlapBox(wallCheckLeft.position, wallCubeSize, 0, playerLayer);
@@ -270,18 +272,40 @@ namespace Platformer.Player
             Gizmos.DrawWireCube(topCheck.position, groundCubeSize);
 
         }
+        private void OnCollisionStay2D(Collision2D collision)
+        {
+            if (collision.contacts.Length > 0  && !isOnTopOfOtherPlayer && !isOnGround)
+            {
+               
+                for (int i = 0; i < collision.contacts.Length; i++)
+                {
+                    if (Vector3.Dot(collision.contacts[i].normal, Vector3.up) > 0.5)
+                    {
+                        Debug.Log("cont on bottom top");
+              
+                        if (collision.gameObject.CompareTag("Player") && !isOnTopOfOtherPlayer)
+                        {
+                            Debug.Log("is on top of another player");
+                            isOnTopOfOtherPlayer = true;
+                        }
+                    }
+                }
+            }
+        }
         private void OnCollisionEnter2D(Collision2D collision)
         {
-            if (collision.contacts.Length > 0)
+            if (collision.contacts.Length > 0 && !isOnGround)
             {
-                ContactPoint2D contact = collision.contacts[0];
-                if (Vector3.Dot(contact.normal, Vector3.up) > 0.5)
+                for (int i = 0; i < collision.contacts.Length; i++)
                 {
-                    Debug.Log("cont on bottom");
-                    if (collision.gameObject.CompareTag("Ground"))
+                    if (Vector3.Dot(collision.contacts[i].normal, Vector3.up) > 0.5)
                     {
-                        Debug.Log("is grounded");
-                        isOnGround = true;
+                      //  Debug.Log("cont on bottom gr");
+                        if (collision.gameObject.CompareTag("Ground") && !isOnGround)
+                        {
+                         //   Debug.Log("is grounded");
+                            isOnGround = true;
+                        }
                     }
                 }
             }
@@ -290,8 +314,13 @@ namespace Platformer.Player
         {
             if (collision.gameObject.CompareTag("Ground"))
             {
-                Debug.Log("is off  grounded");
+           //     Debug.Log("is off  grounded");
                 isOnGround = false;
+            }
+            if (collision.gameObject.CompareTag("Player"))
+            {
+          //      Debug.Log("is off  player");
+                isOnTopOfOtherPlayer = false;
             }
         }
 

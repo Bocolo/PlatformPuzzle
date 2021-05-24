@@ -4,7 +4,26 @@ using UnityEngine;
 
 public class JunkScript : MonoBehaviour
 {
-    public Vector2 move;
+    CharacterController charCont;
+    public float speed = 6;
+    private void Start()
+    {
+        charCont= GetComponent<CharacterController>();
+
+    }
+    private void Update()
+    {
+        Move();
+    }
+    private void Move()
+    {
+        float horizontalMove = Input.GetAxis("Horizontal");
+        float verticalMove = Input.GetAxis("Vertical");
+        Vector3 move = transform.up * verticalMove + transform.right * horizontalMove;
+        charCont.Move(speed * Time.deltaTime * move);
+    }
+}
+/*public Vector2 move;
     Rigidbody2D rb;
     bool isJumping;
     bool canJump;
@@ -70,7 +89,7 @@ public class JunkScript : MonoBehaviour
                 extraJumpCount = extraJumpValue;
             }
         }
-        /*    isWallSliding = false;
+        *//*    isWallSliding = false;
             if (isOnWall && !isGrounded)
             {
                 isWallSliding = true;
@@ -78,7 +97,7 @@ public class JunkScript : MonoBehaviour
                 {
                     rb.velocity = new Vector2(rb.velocity.x, -wallSlidingSpeedMax);
                 }
-            }*/
+            }*//*
 
         // other version 
         if ((isTestingWallLeft || isTestingWallRight) && !isTestingGround && move.x != 0)
@@ -160,11 +179,11 @@ public class JunkScript : MonoBehaviour
                 {
                     //  extraJumpCount--;
                     //this works for jumping of wall but need to add ability to jump to other wall etc
-                    /*
+                    *//*
                                             if (-move.x == wallDirX)
                                             {
                                                 rb.velocity = new Vector2(wallDirX * wallJumpForce, jumpForce);
-                                            }*/
+                                            }*//*
 
                     // this is not what i need -- added wall stick time be
 
@@ -304,15 +323,7 @@ public class JunkScript : MonoBehaviour
         if (!hitDown)
         {
             isGrounded = false;
-        }
-        /*    isGrounded = false;
-            isOnWall = false;
-            isOnSurface = false;
-            isTouchingLeftWall = false;
-            isTouchingRightWall = false;*/
-    }
-}
-
+        }*/
 /*
  *   [SerializeField] float rightPositionX;
         [SerializeField] float rightPositionXmin;
