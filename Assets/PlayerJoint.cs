@@ -28,7 +28,9 @@ namespace Platformer.Player
                 {
                     Destroy(GetComponent<FixedJoint2D>());
                     playerController.hasJoint = false;
-             
+                    Debug.Log("5th Condition.   REMOVING Fixed Joint between: bottom/cb; " + fj.connectedBody.name + ".  And : top/fj ;" + gameObject.name);
+
+
                 }
             }
             if (fj == null && playerController.hasJoint)
@@ -42,125 +44,65 @@ namespace Platformer.Player
                 {
                     Destroy(GetComponent<FixedJoint2D>());
                     playerController.hasJoint = false;
+                    Debug.Log("1st Condition.   REMOVING Fixed Joint between: bottom/cb; " + fj.connectedBody.name + ".  And : top/fj ;" + gameObject.name);
                 }
-                if(!playerController.isOnTopOfOtherPlayer)
+                //This is testing -- if works remove above
+                if (!fj.connectedBody.gameObject.GetComponent<PlayerController>().isOnGround && !fj.connectedBody.gameObject.GetComponent<PlayerController>().playerIsOnPlatform &&!fj.connectedBody.gameObject.GetComponent<PlayerController>().isOnTopOfOtherPlayer)
                 {
                     Destroy(GetComponent<FixedJoint2D>());
                     playerController.hasJoint = false;
+                    Debug.Log("2nd Condition.   REMOVING Fixed Joint between: bottom/cb; " + fj.connectedBody.name + ".  And : top/fj ;" + gameObject.name);
+
+                }
+                if (fj.connectedBody.gameObject.GetComponent<PlayerDie>().isDead)
+                {
+                    Destroy(GetComponent<FixedJoint2D>());
+                    playerController.hasJoint = false;
+                    Debug.Log("3rd Condition.   REMOVING Fixed Joint between: bottom/cb; " + fj.connectedBody.name + ".  And : top/fj ;" + gameObject.name);
+
+                }
+                if (!playerController.isOnTopOfOtherPlayer)
+                {
+                    Destroy(GetComponent<FixedJoint2D>());
+                    playerController.hasJoint = false;
+                    Debug.Log("4th Condition.   REMOVING Fixed Joint between: bottom/cb; " + fj.connectedBody.name + ".  And : top/fj ;" + gameObject.name);
+
                 }
             }
-         /*   if(fj!= null)
-            {
-                if (fj.connectedBody.gameObject.transform.parent.CompareTag("Platform"))
-                {
-                    //  transform.parent = fj.connectedBody.gameObject.transform.parent.transform;
-                    transform.parent = fj.connectedBody.gameObject.transform;
-                }
-               
-            }*/
-         /*   else if( fj ==null && transform.parent != null && !isConnectedDirectlyToPlatform)
-            {
-                
-                    transform.parent = null;
-                
-            }*/
+   
           
         }
 
-        private void OnCollisionEnter2D(Collision2D collision)
+        private void OnCollisionStay2D(Collision2D collision)
         {
-         
+          
+            ContactPoint2D contact = collision.contacts[0];
+                if (Vector3.Dot(contact.normal, Vector3.up) > 0.5)
+                {
+
+                    if (collision.gameObject.CompareTag("Player") && collision.transform.parent == null && playerController.isOnTopOfOtherPlayer && !playerController.isActivePlayer && !playerController.hasJoint && fj == null)
+                        {
+                            playerController.hasJoint = true;
+                            fj = gameObject.AddComponent<FixedJoint2D>();
+                            fj.connectedBody = collision.gameObject.GetComponent<Rigidbody2D>();
+                            fj.enableCollision = true;
+                            fj.breakForce = breakForce;
+                    Debug.Log("Adding Fixed Joint between: bottom/cb; " + collision.gameObject.name + ".  And : top/fj ;" + gameObject.name);
+                        }                 
+                    if (collision.gameObject.CompareTag("Player") && collision.transform.parent != null)
+                {
+                    transform.parent = collision.transform.parent;
+                    Debug.Log("Setting as Child through player contact");
+                }
+                }
+          
         }
         private void OnCollisionExit2D(Collision2D collision)
         {
-      /*      if (transform.parent != null)
+            if (collision.gameObject.CompareTag("Player") && transform.parent != null &&!playerController.playerIsOnPlatform)// && playerController.isOnTopOfOtherPlayer)
             {
-                if (collision.gameObject.CompareTag("Platform") && transform.parent == collision.gameObject.transform)
-                {
-                    isConnectedDirectlyToPlatform = false;
-                    transform.parent = null;
-                }
-                if (collision.gameObject.CompareTag("Player"))
-                {
-                    Debug.Log("Pass 1");
-                    if (transform.parent == collision.gameObject.transform.parent.transform)
-                    {
-                        Debug.Log("Pass 2");
-                        
-                            transform.parent = null;
-                        
-                    } 
-                }
-               
-            }*/
-        }
-        private void OnCollisionStay2D(Collision2D collision)
-        {
- /*           if (collision.contacts.Length > 0 && playerController.isOnTopOfOtherPlayer && !playerController.isOnGround)
-            {
-
-                for (int i = 0; i < collision.contacts.Length; i++)
-                {
-                    if (Vector3.Dot(collision.contacts[i].normal, Vector3.up) > 0.5)
-                    {
-                        //   Debug.Log("cont on bottom top");
-
-                        if (collision.gameObject.CompareTag("Player") && collision.gameObject.transform.parent != null)// && collision.gameObject.transform.parent !=null)
-                        {
-                            transform.parent = collision.gameObject.transform.parent.transform;
-
-                        }
-                        if (collision.gameObject.CompareTag("Player") && collision.gameObject.transform.parent == null)
-                        {
-                            transform.parent = null;
-                        }
-                        *//*   if(collision.gameObject.CompareTag("Player") && collision.gameObject.transform.parent == null)
-                           {
-                               transform.parent = null;
-                           }*//*
-
-                    }
-
-                }
-            }*/
-            if (collision.contacts.Length > 0)
-            {
-               // ContactPoint2D contact = collision.contacts[0];
-                for (int i = 0; i < collision.contacts.Length; i++)
-                {
-                    if (Vector3.Dot(collision.contacts[i].normal, Vector3.up) > 0.5)
-                    {
-                     /*   if (collision.gameObject.CompareTag("Platform") && transform.parent == null)
-                        {
-                            isConnectedDirectlyToPlatform = true;
-                            transform.parent = collision.transform;
-                        }*/
-                        if (collision.gameObject.CompareTag("Player") && playerController.isOnTopOfOtherPlayer && !playerController.isActivePlayer && !playerController.hasJoint && fj == null)
-                        {
-
-                            playerController.hasJoint = true;
-
-                            fj = gameObject.AddComponent<FixedJoint2D>();
-                            fj.connectedBody = collision.gameObject.GetComponent<Rigidbody2D>();
-                            fj.enableCollision = true;
-                            fj.breakForce = breakForce;
-                 //           fj.breakTorque = breakTorque;
-                            Debug.Log("Testing joint on Collision " + gameObject.name);
-                        }
-                  /*      if (collision.gameObject.CompareTag("Platform") && !playerController.hasJoint && fj == null)
-                        {
-                            Debug.Log("onPlatform");
-                            playerController.hasJoint = true;
-
-                            fj = gameObject.AddComponent<FixedJoint2D>();
-                            fj.connectedBody = collision.gameObject.GetComponent<Rigidbody2D>();
-                            fj.enableCollision = true;
-                            fj.breakForce = breakForce;
-                        }*/
-
-                    }
-
-                }
+                transform.parent = null;
+                Debug.Log("removing player/platform parent");
             }
         }
     }

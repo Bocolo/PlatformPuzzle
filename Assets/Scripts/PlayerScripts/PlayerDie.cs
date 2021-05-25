@@ -21,7 +21,7 @@ namespace Platformer.Player
         SpriteRenderer playerSprite;
         SpriteRenderer deadSpriteRenderer;
         PlayerController playerController;
-        
+        Collider2D collider;
         Rigidbody2D rb;
       
         private void Start()
@@ -29,7 +29,8 @@ namespace Platformer.Player
            playerSprite = GetComponent<SpriteRenderer>();
            playerController = GetComponent<PlayerController>();
             rb = GetComponent<Rigidbody2D>();
-           
+
+            collider = GetComponent<BoxCollider2D>();
         }
         private void Update()
         {
@@ -40,6 +41,7 @@ namespace Platformer.Player
         {
             //Temporary fixes, Require animations etc
             //Temporary fixes, Require animations etc
+            Debug.Log("Should Die :  + " + gameObject.name);
             if (hasDeadSprite)
             {
                 DeadAnimation();
@@ -58,28 +60,20 @@ namespace Platformer.Player
         }
         void EnablePlayer()// (bool enablePlayer)
         {
-            /*     if (enablePlayer)
-                 {
-                     playerController.enabled = true;
-                     playerSprite.enabled = true;
-                 }
-                 else
-                 {
-                     playerController.enabled = false;
-                     playerSprite.enabled = false;
-                 }*/
+         //   collider.enabled = true;
             playerController.enabled = true;
             playerSprite.enabled = true;
+       
         }
         void DisablePlayer()
         {
             playerController.enabled = false;
             playerSprite.enabled = false;
+          //  collider.enabled = false;
         }
         void DeadAnimation()
         {
-            /*      playerController.enabled = false;
-                  playerSprite.enabled = false;*/
+       
             DisablePlayer();
             isInputEnabled = false;
             transform.parent = null;
@@ -88,22 +82,15 @@ namespace Platformer.Player
                 deadSpriteClone = Instantiate(deadSprite, new Vector3(transform.position.x, transform.position.y, -0.1f), transform.rotation);
                 deadSpriteClone.name = "deadSpriteClone";
                 deadSpriteRenderer = deadSpriteClone.GetComponent<SpriteRenderer>();
-         //       deadSpriteClone.GetComponent<DeadFloorCollision>().isGrounded = false;
-                                     
+                                    
             }
             else
             {
                 deadSpriteRenderer.enabled = false;
-                deadSpriteClone.transform.position = transform.position;
-
-           //     deadSpriteClone.GetComponent<DeadFloorCollision>().isGrounded = false;
-           
+                deadSpriteClone.transform.position = transform.position;        
             }
   
             deadSpriteRenderer.enabled = true;
-
-            //   FreezeContraints();
-
             Invoke("ResetTransform", 0.5f);
             Invoke("EnableInput", enableInputTime);
         }
@@ -127,19 +114,14 @@ namespace Platformer.Player
                 {
                     ResetAfterDeath();
                 }
-            } if (!hasDeadSprite)
-            {
-
-            }
+            } 
         }
         void ResetAfterDeath()
         {
             isDead = false;
             ResetTransform();
             if (hasDeadSprite)
-            {/*
-                playerSprite.enabled = true;
-                playerController.enabled = true;*/
+            {
                 EnablePlayer();
             }
             else
@@ -154,6 +136,7 @@ namespace Platformer.Player
         {
             if (collision.gameObject.CompareTag("Danger") && !isDead)
             {
+          //      Debug.Log("Collision Die : " + gameObject.name);
                 Die();
             }
        

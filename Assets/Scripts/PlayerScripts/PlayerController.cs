@@ -88,15 +88,12 @@ namespace Platformer.Player
             if ((isOnASurface && !isJumping)|| isOnTopOfOtherPlayer) 
             {
                 SetJumpValue();         
-            }                 
-             
-          
+            }                                        
             SetActiveSprite();
             SetWallSliding();
             SetSurfaceBools();  
             CheckingWallDirection();       
-            SetRbConstraintsForJoints();
-        
+            SetRbConstraintsForJoints();        
         }
         private void FixedUpdate()
         {
@@ -119,18 +116,10 @@ namespace Platformer.Player
                 {
                     rb.constraints = inActiveConstraintsAndGrounded;
                 }
-                /*    else if (isOnTopOfOtherPlayer && rb.constraints != onTopOfPlayerConstraints && !hasJoint)
-                    {
-                        rb.constraints = onTopOfPlayerConstraints;
-                    }*/
                 else if (isOnTopOfOtherPlayer && rb.constraints != originalRbConstraints && hasJoint)
                 {
                     rb.constraints = originalRbConstraints;
                 }
-                /*  else if( isOnTopOfOtherPlayer && rb.constraints != inActiveConstraintsAndGrounded)
-                      {
-                          rb.constraints = inActiveConstraintsAndGrounded;
-                      }*/
                 else if (!isOnGround && rb.constraints != inActiveConstraints && !isOnTopOfOtherPlayer)
                 {
                     rb.constraints = inActiveConstraints;
@@ -159,9 +148,9 @@ namespace Platformer.Player
         }
         void WallJump()
         {
-            if (isAllowedToWallJump) //&&(move.x == wallDirX || move.x ==0)
+            if (isAllowedToWallJump) 
             {
-                rb.velocity = new Vector2(wallForce.x * -wallDirX, wallForce.y);//-move.x//wallDirX
+                rb.velocity = new Vector2(wallForce.x * -wallDirX, wallForce.y);
             }
 
         }
@@ -218,8 +207,6 @@ namespace Platformer.Player
             if (isActivePlayer)
             {
               
-
-         //       isOnTopOfOtherPlayer = Physics2D.OverlapBox(groundCheck.position, groundCubeSize, 0, otherPlayerLayer);
                 isAnotherPlayerOnTop = Physics2D.OverlapBox(topCheck.position, groundCubeSize, 0, otherPlayerLayer);
 
                 isTouchingPlayerLeft = Physics2D.OverlapBox(wallCheckLeft.position, wallCubeSize, 0, otherPlayerLayer);
@@ -228,16 +215,6 @@ namespace Platformer.Player
             }
             else
             {
-                  /*
-                    if (Physics2D.OverlapBox(groundCheck.position, groundCubeSize, 0, playerLayer) || Physics2D.OverlapBox(groundCheck.position, groundCubeSize, 0, otherPlayerLayer))
-                    {
-                //        isOnTopOfOtherPlayer = true;
-                    }
-                    else
-                    {
-                 //       isOnTopOfOtherPlayer = false;
-                    }
-               // isOnTopOfOtherPlayer = Physics2D.OverlapBox(groundCheck.position, groundCubeSize, 0,playerLayer);*/
                 isAnotherPlayerOnTop = Physics2D.OverlapBox(topCheck.position, groundCubeSize, 0, playerLayer);
 
                 isTouchingPlayerLeft = Physics2D.OverlapBox(wallCheckLeft.position, wallCubeSize, 0, playerLayer);
@@ -300,10 +277,8 @@ namespace Platformer.Player
                 {
                     if (Vector3.Dot(collision.contacts[i].normal, Vector3.up) > 0.5)
                     {
-                      //  Debug.Log("cont on bottom gr");
                         if (collision.gameObject.CompareTag("Ground") && !isOnGround)
                         {
-                         //   Debug.Log("is grounded");
                             isOnGround = true;
                         }
                     }
@@ -314,12 +289,10 @@ namespace Platformer.Player
         {
             if (collision.gameObject.CompareTag("Ground"))
             {
-           //     Debug.Log("is off  grounded");
                 isOnGround = false;
             }
             if (collision.gameObject.CompareTag("Player"))
             {
-          //      Debug.Log("is off  player");
                 isOnTopOfOtherPlayer = false;
             }
         }

@@ -8,8 +8,11 @@ namespace Platformer.Enemy
 {
     public class EnemyRoamer : MonoBehaviour
     {
+        //TODO - Fix roamer flip/parenting issue
     
         [SerializeField] LayerMask playerLayer;
+
+        [SerializeField] LayerMask otherPlayerLayer;
         [SerializeField] float speedUp;
         float originalSpeed;
         [SerializeField] bool isHittingPlayer;
@@ -54,6 +57,7 @@ namespace Platformer.Enemy
         //    canKillPlayer = Physics2D.OverlapBox(bottomCheck.position, bottomCubeSize, 0, playerLayer);
             if (canKillPlayer &&  !player.isDead)
             {
+                Debug.Log("Should KillPlayer");
                 player.Die();
             }
         }
@@ -64,18 +68,20 @@ namespace Platformer.Enemy
             RaycastHit2D rightHit;      
             if (platform.isFacingRight)
             {
-                hitPlayerInFront = Physics2D.Raycast(transform.position, Vector2.right, distanceToChase, playerLayer);
-                rightHit = Physics2D.Raycast(transform.position, Vector2.right, distanceToKill, playerLayer);
+                hitPlayerInFront = Physics2D.Raycast(transform.position, Vector2.right, distanceToChase, (playerLayer|otherPlayerLayer));
+                rightHit = Physics2D.Raycast(transform.position, Vector2.right, distanceToKill, (playerLayer | otherPlayerLayer));
             }
             else
             {
-               hitPlayerInFront = Physics2D.Raycast(transform.position, -Vector2.right, distanceToChase, playerLayer);
-                rightHit = Physics2D.Raycast(transform.position, -Vector2.right, distanceToKill, playerLayer);
+               hitPlayerInFront = Physics2D.Raycast(transform.position, -Vector2.right, distanceToChase, (playerLayer | otherPlayerLayer));
+                rightHit = Physics2D.Raycast(transform.position, -Vector2.right, distanceToKill, (playerLayer | otherPlayerLayer));
             }
           
             if (hitPlayerInFront.collider != null)
             {
                 isHittingPlayer = true;
+                //This is only working on Actie Players
+                Debug.Log("os Hitting Player");
             }
             else
             {
@@ -145,6 +151,9 @@ namespace Platformer.Enemy
         {
             if (collision.gameObject.CompareTag("Player"))
             {
+                //This works for inactive player
+                Debug.Log("hitting player");
+                
                 if (isBallEnemy)
                 {
                     player = collision.gameObject.GetComponent<PlayerDie>();
